@@ -79,6 +79,58 @@
       </div>
     </div>
 
+    <div class="filters-grid anim anim-4" style="margin-top:16px;">
+      <div class="filter-group">
+        <label>Країна</label>
+        <select class="filter-select" id="filterCountry">
+          <option value="">Всі країни</option>
+          <option>США</option>
+          <option>Таїланд</option>
+          <option>ДР Конго</option>
+          <option>Ємен</option>
+          <option>Україна</option>
+          <option>Єгипет</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Тип збудника</label>
+        <select class="filter-select" id="filterType">
+          <option value="">Всі типи</option>
+          <option>Вірус</option>
+          <option>Бактерія</option>
+          <option>Паразит</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Збудник</label>
+        <select class="filter-select" id="filterPathogen">
+          <option value="">Всі збудники</option>
+          <option>Hantavirus</option>
+          <option>Dengue virus</option>
+          <option>Monkeypox virus</option>
+          <option>Vibrio cholerae</option>
+          <option>Measles morbillivirus</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Симптом</label>
+        <select class="filter-select" id="filterSymptom">
+          <option value="">Всі симптоми</option>
+          <option>Лихоманка</option>
+          <option>Кашель</option>
+          <option>Висипка</option>
+          <option>Діарея</option>
+          <option>Задишка</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;" class="anim anim-4">
+      <button class="btn btn--primary" onclick="applyMapFilters()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4.2"/></svg>
+        Оновити
+      </button>
+    </div>
+
 
   </div>
 </main>
