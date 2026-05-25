@@ -139,3 +139,23 @@
 
   </div>
 </main>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/app.js"></script>
+<script src="js/map.js"></script>
+<script>
+  function setView(view, btn) {
+    document.querySelectorAll('.toggle-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('viewToggle').dataset.view = view;
+    applyMapFilters();
+    if (view === 'ukraine' && epiMap) {
+      epiMap.setView([48.3, 31.2], 5);
+    } else if (epiMap) {
+      epiMap.setView([20, 10], 2);
+    }
+  }
+</script>
+</body>
+</html>
