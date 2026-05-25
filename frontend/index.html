@@ -48,6 +48,28 @@
       </div>
     </div>
 
-    
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;" class="anim anim-2">
+      <div class="legend">
+        <button class="legend-btn btn btn--ghost" style="padding:5px 14px;font-size:13px;" data-level="all" onclick="filterByLevel('all')">Всі</button>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#00c9a7"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="normal" onclick="filterByLevel('normal')">Нормальний</button>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ffd166"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="medium" onclick="filterByLevel('medium')">Середній</button>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff4d6d"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="danger" onclick="filterByLevel('danger')">Небезпечний</button>
+        </div>
+      </div>
+      <div class="toggle-tabs">
+        <button class="toggle-tab active" id="viewToggle" data-view="world" onclick="setView('world',this)">Весь світ</button>
+        <button class="toggle-tab" data-view="ukraine" onclick="setView('ukraine',this)">Україна</button>
+      </div>
+    </div>
+
+
   </div>
 </main>
