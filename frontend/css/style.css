@@ -249,3 +249,15 @@ ul { list-style: none; }
   color: #000;
 }
 .toggle-tab:hover:not(.active) { color: var(--text); }
+
+/*LEGEND*/
+.legend {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; color: var(--text2);
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
