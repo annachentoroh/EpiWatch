@@ -4,3 +4,54 @@
 }
 
 .leaflet-tile-pane { filter: brightness(0.75) saturate(0.6) hue-rotate(180deg); }
+
+.leaflet-popup-content-wrapper {
+  background: #1e2330 !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+  color: #e8eaf0 !important;
+  min-width: 220px;
+}
+.leaflet-popup-tip { background: #1e2330 !important; }
+.leaflet-popup-close-button {
+  color: #9aa0b4 !important;
+  font-size: 18px !important;
+  top: 10px !important; right: 12px !important;
+}
+.leaflet-popup-close-button:hover { color: #e8eaf0 !important; }
+
+.epi-popup h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: #e8eaf0; margin-bottom: 2px;
+}
+.epi-popup .meta {
+  font-size: 11px; color: #5c6378;
+  margin-bottom: 12px;
+}
+.epi-popup .row {
+  display: flex; justify-content: space-between;
+  font-size: 13px; margin-bottom: 6px;
+}
+.epi-popup .row label { color: #9aa0b4; }
+.epi-popup .row span  { color: #e8eaf0; font-weight: 500; }
+.epi-popup .advice {
+  background: rgba(0,201,167,.1);
+  border-left: 2px solid #00c9a7;
+  padding: 8px 10px;
+  font-size: 12px; color: #9aa0b4;
+  border-radius: 0 6px 6px 0;
+  margin: 10px 0;
+}
+.epi-popup .detail-btn {
+  display: block; width: 100%;
+  background: #00c9a7; color: #000;
+  border: none; border-radius: 99px;
+  padding: 8px 0; font-size: 13px; font-weight: 600;
+  text-align: center; cursor: pointer;
+  transition: background .2s;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 10px;
+}
+.epi-popup .detail-btn:hover { background: #00a88c; }
