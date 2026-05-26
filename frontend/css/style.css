@@ -275,3 +275,15 @@ ul { list-style: none; }
   color: var(--text3); text-transform: uppercase; letter-spacing: .7px;
   margin-bottom: 10px;
 }
+
+/*ANIMATIONS*/
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim { animation: fadeUp .5s ease both; }
+.anim-1 { animation-delay: .05s; }
+.anim-2 { animation-delay: .1s; }
+.anim-3 { animation-delay: .15s; }
+.anim-4 { animation-delay: .2s; }
+.anim-5 { animation-delay: .25s; }
