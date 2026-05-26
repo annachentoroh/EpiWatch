@@ -55,3 +55,23 @@
   margin-top: 10px;
 }
 .epi-popup .detail-btn:hover { background: #00a88c; }
+
+.epi-marker {
+  width: 28px; height: 28px;
+  border-radius: 50% 50% 50% 4px;
+  transform: rotate(-45deg);
+  border: 2px solid;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.epi-marker.normal   { background: rgba(0,201,167,.2);   border-color: #00c9a7; }
+.epi-marker.medium   { background: rgba(255,209,102,.2); border-color: #ffd166; }
+.epi-marker.danger   { background: rgba(255,77,109,.2);  border-color: #ff4d6d; }
+
+.epi-marker-inner {
+  width: 8px; height: 8px; border-radius: 50%;
+  transform: rotate(45deg);
+}
+.epi-marker.normal .epi-marker-inner   { background: #00c9a7; }
+.epi-marker.medium .epi-marker-inner   { background: #ffd166; }
+.epi-marker.danger .epi-marker-inner   { background: #ff4d6d; }
