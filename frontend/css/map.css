@@ -1,0 +1,6 @@
+.leaflet-container {
+  background: #1a1e2a !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+
+.leaflet-tile-pane { filter: brightness(0.75) saturate(0.6) hue-rotate(180deg); }
