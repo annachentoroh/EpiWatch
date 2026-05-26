@@ -227,3 +227,25 @@ ul { list-style: none; }
   min-width: 160px;
 }
 .filter-select:focus { outline: none; border-color: var(--teal); }
+
+/*TOGGLE TABS*/
+.toggle-tabs {
+  display: flex;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 3px;
+  gap: 2px;
+}
+.toggle-tab {
+  padding: 6px 18px;
+  border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  transition: all .2s;
+}
+.toggle-tab.active {
+  background: var(--teal);
+  color: #000;
+}
+.toggle-tab:hover:not(.active) { color: var(--text); }
