@@ -174,3 +174,13 @@ function buildPieChart() {
     }
   });
 }
+
+function getLabels(period, all) {
+  const n = { '7': 2, '30': 3, '90': 5, '365': 7, 'all': 7 }[period] || 7;
+  return all.slice(-n);
+}
+function getPeriodSlice(data, period) {
+  const n = { '7': 2, '30': 3, '90': 5, '365': 7, 'all': 7 }[period] || 7;
+  return data.slice(-n);
+}
+
