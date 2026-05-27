@@ -7,16 +7,124 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+<div id="nav-placeholder"></div>
+
 <main class="page">
   <div class="container">
+
     <div class="page-header anim">
       <h1>Освітній блок</h1>
       <p>Пам'ятки першої допомоги, профілактика та перевірка поширених чуток</p>
     </div>
 
+    <!-- NAV TABS -->
     <div style="display:flex;gap:6px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0;" class="anim anim-1">
-      <button class="edu-tab-btn active" data-tab="firstaid" onclick="switchTab('firstaid',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid var(--teal);color:var(--teal);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Перша допомога</button>
-      <button class="edu-tab-btn" data-tab="prevention" onclick="switchTab('prevention',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Профілактика</button>
-      <button class="edu-tab-btn" data-tab="myths" onclick="switchTab('myths',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Верифікація інформації</button>
-      <button class="edu-tab-btn" data-tab="glossary" onclick="switchTab('glossary',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Глосарій</button>
+      <button class="edu-tab-btn active" data-tab="firstaid" onclick="switchTab('firstaid',this)"
+        style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;
+        border-bottom:2px solid var(--teal);color:var(--teal);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">
+        Перша допомога
+      </button>
+      <button class="edu-tab-btn" data-tab="prevention" onclick="switchTab('prevention',this)"
+        style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;
+        border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">
+        Профілактика
+      </button>
+      <button class="edu-tab-btn" data-tab="myths" onclick="switchTab('myths',this)"
+        style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;
+        border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">
+        Верифікація інформації
+      </button>
+      <button class="edu-tab-btn" data-tab="glossary" onclick="switchTab('glossary',this)"
+        style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;
+        border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">
+        Глосарій
+      </button>
     </div>
+
+     <!-- TAB: ПЕРША ДОПОМОГА -->
+    <div id="tab-firstaid" class="anim anim-2">
+      <div class="edu-grid">
+        <div class="edu-card" onclick="expandCard(this)">
+          <div class="edu-card__icon" style="background:var(--red-dim);">🦠</div>
+          <div class="edu-card__title">Хантавірус / Геморагічна лихоманка</div>
+          <div class="edu-card__desc">Сильний головний біль, задишка, м'язовий біль після контакту з гризунами.</div>
+          <div class="edu-expand" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <ol style="display:flex;flex-direction:column;gap:8px;counter-reset:steps;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">1.</span>Ізолюйтеся і не контактуйте з іншими людьми</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">2.</span>Негайно зателефонуйте до швидкої (103)</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">3.</span>Повідомте лікаря про контакт з гризунами</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">4.</span>Не вживати жодних ліків без призначення</li>
+            </ol>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--teal);cursor:pointer;">Розгорнути →</div>
+        </div>
+
+        <div class="edu-card" onclick="expandCard(this)">
+          <div class="edu-card__icon" style="background:var(--yellow-dim);">🌡️</div>
+          <div class="edu-card__title">Гарячка денге</div>
+          <div class="edu-card__desc">Висока температура, висипка, сильний біль у суглобах після перебування в тропіках.</div>
+          <div class="edu-expand" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <ol style="display:flex;flex-direction:column;gap:8px;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">1.</span>Забезпечити відпочинок та рясне пиття</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">2.</span>Уникати аспірину та ібупрофену (ризик кровотечі)</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">3.</span>Звернутися до лікаря для підтвердження діагнозу</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">4.</span>Захистити оточуючих від комарів</li>
+            </ol>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--teal);cursor:pointer;">Розгорнути →</div>
+        </div>
+
+        <div class="edu-card" onclick="expandCard(this)">
+          <div class="edu-card__icon" style="background:var(--teal-dim);">💧</div>
+          <div class="edu-card__title">Холера</div>
+          <div class="edu-card__desc">Раптова рясна діарея, блювання, швидке зневоднення після вживання поганої води.</div>
+          <div class="edu-expand" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <ol style="display:flex;flex-direction:column;gap:8px;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">1.</span>Відновлення рідини — ОРС (оральна регідратаційна суміш)</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">2.</span>Госпіталізація при тяжкому зневодненні</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">3.</span>Ізоляція та дезінфекція туалету</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">4.</span>Повідомити санепідслужбу</li>
+            </ol>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--teal);cursor:pointer;">Розгорнути →</div>
+        </div>
+
+        <div class="edu-card" onclick="expandCard(this)">
+          <div class="edu-card__icon" style="background:var(--blue-dim);">🐦</div>
+          <div class="edu-card__title">Пташиний грип H5N1</div>
+          <div class="edu-card__desc">Після контакту з птицею: висока температура, важкий кашель, пневмонія.</div>
+          <div class="edu-expand" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <ol style="display:flex;flex-direction:column;gap:8px;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">1.</span>Негайна ізоляція та виклик швидкої</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">2.</span>Носити маску FFP2</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">3.</span>Повідомити лікаря про контакт з птицею</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">4.</span>Антивірусний препарат Oseltamivir — лише за призначенням</li>
+            </ol>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--teal);cursor:pointer;">Розгорнути →</div>
+        </div>
+
+        <div class="edu-card" onclick="expandCard(this)">
+          <div class="edu-card__icon" style="background:var(--red-dim);">🔴</div>
+          <div class="edu-card__title">Мавпяча віспа</div>
+          <div class="edu-card__desc">Характерна висипка з виразками на шкірі, лихоманка, збільшені лімфатичні вузли.</div>
+          <div class="edu-expand" style="display:none;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <ol style="display:flex;flex-direction:column;gap:8px;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">1.</span>Накрити висипку чистою пов'язкою</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">2.</span>Ізоляція до повного загоєння</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">3.</span>Звернутися до дерматолога або інфекціоніста</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--teal);font-weight:700;">4.</span>Повідомити сексуальних партнерів</li>
+            </ol>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--teal);cursor:pointer;">Розгорнути →</div>
+        </div>
+
+        <div class="edu-card" onclick="location.href='test.html'" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:180px;">
+          <div style="font-size:32px;margin-bottom:12px;">🧬</div>
+          <div class="edu-card__title">Не впевнені у симптомах?</div>
+          <div class="edu-card__desc" style="margin-top:6px;">Пройдіть тест — він допоможе визначити можливе захворювання</div>
+          <div style="margin-top:14px;color:var(--teal);font-size:13px;font-weight:500;">Пройти тест →</div>
+        </div>
+      </div>
+    </div>
+
