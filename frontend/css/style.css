@@ -135,6 +135,19 @@ ul { list-style: none; }
 }
 .page-header p { color: var(--text2); font-size: 14px; }
 
+/*CARDS*/
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.card--highlight {
+  background: var(--card2);
+  border-color: var(--border2);
+}
+
+
 /*STAT CARDS*/
 .stat-cards {
   display: grid;
@@ -172,6 +185,23 @@ ul { list-style: none; }
 .stat-card__value.teal { color: var(--teal); }
 .stat-card__value.red  { color: var(--red); }
 .stat-card__value.yellow { color: var(--yellow); }
+
+/*BADGE / PILL*/
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px; font-weight: 500;
+}
+.badge--green  { background: var(--teal-dim);   color: var(--teal);   }
+.badge--red    { background: var(--red-dim);    color: var(--red);    }
+.badge--yellow { background: var(--yellow-dim); color: var(--yellow); }
+.badge--blue   { background: var(--blue-dim);   color: var(--blue);   }
+.badge__dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+
 
 /*BUTTONS*/
 .btn {
@@ -249,6 +279,21 @@ ul { list-style: none; }
   color: #000;
 }
 .toggle-tab:hover:not(.active) { color: var(--text); }
+
+/*TIME TABS*/
+.time-tabs {
+  display: flex; gap: 2px;
+}
+.time-tab {
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  transition: all .2s;
+}
+.time-tab.active { background: var(--teal-dim); color: var(--teal); }
+.time-tab:hover:not(.active) { background: var(--card); color: var(--text); }
+
 
 /*LEGEND*/
 .legend {
