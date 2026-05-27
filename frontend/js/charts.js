@@ -91,3 +91,48 @@ function buildMainChart(diseaseId, period) {
     }
   });
 }
+
+function buildBarChart() {
+  const ctx = document.getElementById('ageChart');
+  if (!ctx) return;
+
+  const diseases = EpiWatch.getDiseases();
+  const sorted   = [...diseases].sort((a, b) => b.cases - a.cases);
+
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(d => d.name),
+      datasets: [{
+        label: 'Випадки',
+        data: sorted.map(d => d.cases),
+        backgroundColor: sorted.map(d => EpiWatch.levelColor(d.level) + '99'),
+        borderColor:     sorted.map(d => EpiWatch.levelColor(d.level)),
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1e2330',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          padding: 12,
+          titleColor: '#e8eaf0',
+          bodyColor: '#9aa0b4',
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#5c6378' } },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: { color: '#5c6378', callback: v => EpiWatch.formatNumber(v) }
+        }
+      }
+    }
+  });
+}
