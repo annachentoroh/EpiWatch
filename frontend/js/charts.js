@@ -184,3 +184,39 @@ function getPeriodSlice(data, period) {
   return data.slice(-n);
 }
 
+//Init
+document.addEventListener('DOMContentLoaded', () => {
+  chartDefaults();
+
+  let currentDisease = 'hantavirus';
+  let currentPeriod  = 'all';
+
+  buildMainChart(currentDisease, currentPeriod);
+  buildBarChart();
+  buildPieChart();
+
+  //Time tabs
+  document.querySelectorAll('.time-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPeriod = btn.dataset.period;
+      buildMainChart(currentDisease, currentPeriod);
+    });
+  });
+
+  //Disease select
+  const dSelect = document.getElementById('chartDisease');
+  if (dSelect) {
+    dSelect.addEventListener('change', () => {
+      currentDisease = dSelect.value;
+      buildMainChart(currentDisease, currentPeriod);
+    });
+  }
+
+  //Country select (for label, demo only)
+  const country1 = document.getElementById('chartCountry1');
+  const country2 = document.getElementById('chartCountry2');
+  //Could extend to show comparison; placeholder for API integration
+});
+
