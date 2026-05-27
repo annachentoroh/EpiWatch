@@ -19,7 +19,7 @@
       <p>Актуальна інформація про динаміку поширення захворювань у світі</p>
     </div>
 
-    <!-- STAT CARDS -->
+    <!--STAT CARDS-->
     <div class="stat-cards anim anim-1">
       <div class="stat-card">
         <div class="stat-card__label">Всього випадків</div>
@@ -32,5 +32,34 @@
       <div class="stat-card yellow">
         <div class="stat-card__label">Одужали</div>
         <div class="stat-card__value yellow">225K</div>
+      </div>
+    </div>
+
+    <!--MAIN CHART-->
+    <div class="chart-wrap anim anim-2" style="margin-bottom:24px;">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Динаміка поширення вірусу</div>
+          <div style="font-size:13px;color:#9aa0b4;margin-top:2px;">Нові випадки по тижнях</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <select class="filter-select" id="chartDisease" style="min-width:180px;">
+            <option value="hantavirus">Хантавірус</option>
+            <option value="dengue">Гарячка денге</option>
+            <option value="mpox">Мавпяча віспа</option>
+            <option value="cholera">Холера</option>
+            <option value="measles">Кір</option>
+          </select>
+          <div class="time-tabs">
+            <button class="time-tab" data-period="7">7 дн</button>
+            <button class="time-tab" data-period="30">30 дн</button>
+            <button class="time-tab" data-period="90">3 міс</button>
+            <button class="time-tab" data-period="365">Рік</button>
+            <button class="time-tab active" data-period="all">Весь час</button>
+          </div>
+        </div>
+      </div>
+      <div style="height:300px;">
+        <canvas id="mainChart"></canvas>
       </div>
     </div>
