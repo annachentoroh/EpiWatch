@@ -135,6 +135,19 @@ ul { list-style: none; }
 }
 .page-header p { color: var(--text2); font-size: 14px; }
 
+/*CARDS*/
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.card--highlight {
+  background: var(--card2);
+  border-color: var(--border2);
+}
+
+
 /*STAT CARDS*/
 .stat-cards {
   display: grid;
@@ -172,6 +185,23 @@ ul { list-style: none; }
 .stat-card__value.teal { color: var(--teal); }
 .stat-card__value.red  { color: var(--red); }
 .stat-card__value.yellow { color: var(--yellow); }
+
+/*BADGE / PILL*/
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px; font-weight: 500;
+}
+.badge--green  { background: var(--teal-dim);   color: var(--teal);   }
+.badge--red    { background: var(--red-dim);    color: var(--red);    }
+.badge--yellow { background: var(--yellow-dim); color: var(--yellow); }
+.badge--blue   { background: var(--blue-dim);   color: var(--blue);   }
+.badge__dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+
 
 /*BUTTONS*/
 .btn {
@@ -250,6 +280,21 @@ ul { list-style: none; }
 }
 .toggle-tab:hover:not(.active) { color: var(--text); }
 
+/*TIME TABS*/
+.time-tabs {
+  display: flex; gap: 2px;
+}
+.time-tab {
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  transition: all .2s;
+}
+.time-tab.active { background: var(--teal-dim); color: var(--teal); }
+.time-tab:hover:not(.active) { background: var(--card); color: var(--text); }
+
+
 /*LEGEND*/
 .legend {
   display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
@@ -261,6 +306,25 @@ ul { list-style: none; }
 .legend-dot {
   width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
 }
+
+/*TABLE*/
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  text-align: left;
+  font-size: 11px; font-weight: 600;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .6px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 12px 14px;
+  font-size: 14px; color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg3); }
+.data-table td.strong { font-weight: 500; color: var(--text); }
+
 
 /*RISK REGION BOX*/
 .region-box {
@@ -275,6 +339,19 @@ ul { list-style: none; }
   color: var(--text3); text-transform: uppercase; letter-spacing: .7px;
   margin-bottom: 10px;
 }
+
+/*FOOTER*/
+.footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding: 24px 32px;
+  text-align: center;
+  font-size: 13px; color: var(--text3);
+  margin-top: 60px;
+}
+.footer a { color: var(--teal); }
+.footer a:hover { text-decoration: underline; }
+
 
 /*ANIMATIONS*/
 @keyframes fadeUp {
@@ -329,6 +406,11 @@ ul { list-style: none; }
 .hero__cta { display: flex; gap: 12px; justify-content: center; }
 
 /*MAP AREA*/
+.map-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
 #map {
   width: 100%; height: 500px;
   border-radius: var(--radius);
@@ -337,6 +419,14 @@ ul { list-style: none; }
   overflow: hidden;
   position: relative;
 }
+.map-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  color: var(--text3); font-size: 14px;
+}
+.map-placeholder svg { width: 48px; height: 48px; opacity: .4; }
+
 
 /*FILTERS GRID*/
 .filters-grid {
@@ -344,6 +434,25 @@ ul { list-style: none; }
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 16px;
+}
+
+/*CHART AREA*/
+.chart-wrap {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.chart-wrap canvas { width: 100% !important; }
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap; gap: 12px;
+}
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 17px; font-weight: 700;
 }
 
 /*RESPONSIVE*/
