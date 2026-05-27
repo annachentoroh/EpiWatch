@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiWatch — Освітній блок</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="page">
+  <div class="container">
+    <div class="page-header anim">
+      <h1>Освітній блок</h1>
+      <p>Пам'ятки першої допомоги, профілактика та перевірка поширених чуток</p>
+    </div>
+
+    <div style="display:flex;gap:6px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0;" class="anim anim-1">
+      <button class="edu-tab-btn active" data-tab="firstaid" onclick="switchTab('firstaid',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid var(--teal);color:var(--teal);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Перша допомога</button>
+      <button class="edu-tab-btn" data-tab="prevention" onclick="switchTab('prevention',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Профілактика</button>
+      <button class="edu-tab-btn" data-tab="myths" onclick="switchTab('myths',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Верифікація інформації</button>
+      <button class="edu-tab-btn" data-tab="glossary" onclick="switchTab('glossary',this)" style="padding:10px 18px;background:none;border:none;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--text2);margin-bottom:-1px;transition:all .2s;font-family:var(--font-body);">Глосарій</button>
+    </div>
