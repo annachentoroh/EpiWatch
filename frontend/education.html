@@ -173,3 +173,74 @@
       </div>
     </div>
 
+    <!-- TAB: ВЕРИФІКАЦІЯ ІНФОРМАЦІЇ (MYTHS) -->
+    <div id="tab-myths" style="display:none;" class="anim">
+      <div style="margin-bottom:20px;">
+        <h2 style="font-family:var(--font-display);font-size:20px;font-weight:700;margin-bottom:6px;">Поширені чутки та маніпуляції</h2>
+        <p style="font-size:14px;color:#9aa0b4;">Ми перевіряємо заяви ЗМІ та соцмереж та порівнюємо їх з офіційними науковими даними</p>
+      </div>
+
+      <div class="myth-card">
+        <div class="myth-card__claim">
+          <span class="myth-card__claim-badge">❌ Міф</span>
+          <div class="myth-card__claim-text">«Хантавірус передається від людини до людини, як грип»</div>
+        </div>
+        <div class="myth-card__truth">
+          <strong style="color:var(--teal);">✅ Факт:</strong> Хантавірус передається виключно через контакт з виділеннями інфікованих гризунів (переважно мишей). Передача від людини до людини можлива лише для рідкісного андського штаму. Звичайний повітряно-крапельний шлях НЕ характерний.
+        </div>
+        <div class="myth-card__source">
+          Джерело: <a href="https://www.cdc.gov/hantavirus" target="_blank">CDC Hantavirus</a>, WHO Fact Sheet 2024
+        </div>
+      </div>
+
+      <div class="myth-card">
+        <div class="myth-card__claim">
+          <span class="myth-card__claim-badge">❌ Міф</span>
+          <div class="myth-card__claim-text">«Вакцини від кору викликають аутизм»</div>
+        </div>
+        <div class="myth-card__truth">
+          <strong style="color:var(--teal);">✅ Факт:</strong> Дослідження 1998 року Ендрю Вейкфілда, яке стверджувало такий зв'язок, було відкликане через шахрайство та фабрикацію даних. Понад 20 незалежних досліджень з понад мільйоном учасників не виявили жодного зв'язку між вакциною MMR та аутизмом.
+        </div>
+        <div class="myth-card__source">
+          Джерело: <a href="https://www.who.int/immunization" target="_blank">WHO Immunization</a>, Lancet retraction 2010
+        </div>
+      </div>
+
+      <div class="myth-card">
+        <div class="myth-card__claim">
+          <span class="myth-card__claim-badge">⚠️ Перебільшення</span>
+          <div class="myth-card__claim-text">«Денге стає пандемією в Україні через потепління клімату»</div>
+        </div>
+        <div class="myth-card__truth">
+          <strong style="color:var(--yellow);">📊 Контекст:</strong> Комар Aedes aegypti — основний переносник денге — дійсно розширює ареал через потепління. Однак станом на 2025 рік в Україні зафіксовано лише завезені випадки (після поїздок до тропіків). Ризик місцевої передачі існує, але залишається низьким.
+        </div>
+        <div class="myth-card__source">
+          Джерело: ECDC Risk Assessment 2024, WHO Ukraine Office
+        </div>
+      </div>
+
+      <div class="myth-card">
+        <div class="myth-card__claim">
+          <span class="myth-card__claim-badge">❌ Міф</span>
+          <div class="myth-card__claim-text">«Вживання часнику та лимону захищає від будь-якого вірусу»</div>
+        </div>
+        <div class="myth-card__truth">
+          <strong style="color:var(--teal);">✅ Факт:</strong> Часник і лимон є корисними продуктами, що підтримують імунітет. Однак наукових доказів їхнього захисту від специфічних вірусів (грипу, COVID-19, хантавірусу тощо) немає. Єдиний науково доведений захист від вірусних захворювань — вакцинація та гігієна.
+        </div>
+        <div class="myth-card__source">
+          Джерело: WHO Myth Busters, Cochrane Review 2023
+        </div>
+      </div>
+
+      <div style="background:var(--teal-dim);border:1px solid rgba(0,201,167,.2);border-radius:var(--radius);padding:20px;margin-top:24px;">
+        <h3 style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--teal);margin-bottom:8px;">
+          Хочете перевірити інформацію?
+        </h3>
+        <p style="font-size:14px;color:#9aa0b4;margin-bottom:14px;">Порівняйте медіа-новину з офіційними даними. Функція повного факт-чекінгу буде доступна після підключення API (Backend: Яцун Андрій).</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="https://www.who.int/emergencies/disease-outbreak-news" target="_blank" class="btn btn--ghost" style="font-size:13px;">WHO Outbreak News</a>
+          <a href="https://wwwnc.cdc.gov/travel/notices" target="_blank" class="btn btn--ghost" style="font-size:13px;">CDC Travel Notices</a>
+        </div>
+      </div>
+    </div>
+
