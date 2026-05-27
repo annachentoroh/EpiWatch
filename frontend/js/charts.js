@@ -136,3 +136,41 @@ function buildBarChart() {
     }
   });
 }
+
+function buildPieChart() {
+  const ctx = document.getElementById('typeChart');
+  if (!ctx) return;
+
+  const diseases = EpiWatch.getDiseases();
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: diseases.map(d => d.name),
+      datasets: [{
+        data: diseases.map(d => d.cases),
+        backgroundColor: diseases.map(d => EpiWatch.levelColor(d.level) + 'cc'),
+        borderColor:     diseases.map(d => EpiWatch.levelColor(d.level)),
+        borderWidth: 1.5,
+        hoverOffset: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: { padding: 14, font: { size: 12 } }
+        },
+        tooltip: {
+          backgroundColor: '#1e2330',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1, padding: 12,
+          titleColor: '#e8eaf0', bodyColor: '#9aa0b4',
+        }
+      }
+    }
+  });
+}
