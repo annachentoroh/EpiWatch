@@ -244,3 +244,56 @@
       </div>
     </div>
 
+    <!-- TAB: ГЛОСАРІЙ -->
+    <div id="tab-glossary"  class="anim">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
+        ${[
+          ['Епідемія', 'Значне збільшення кількості випадків захворювання в конкретному регіоні за визначений проміжок часу понад очікуваний рівень.'],
+          ['Пандемія', 'Епідемія, яка охоплює кілька країн або континентів, торкаючись значної частини населення світу.'],
+          ['Ендемія', 'Постійна наявність певного захворювання або інфекційного агента в конкретному географічному регіоні.'],
+          ['Інкубаційний період', 'Проміжок часу між первинним зараженням і появою перших симптомів хвороби.'],
+          ['Летальність (CFR)', 'Відсоток смертей від загальної кількості підтверджених випадків захворювання.'],
+          ['Зоонозна хвороба', 'Захворювання, яке природно передається від тварин до людей (наприклад, хантавірус, пташиний грип).'],
+          ['Вектор', 'Організм (наприклад, комар, кліщ), який переносить збудника захворювання від однієї тварини або людини до іншої.'],
+          ['Серопоширеність', 'Відсоток населення, у крові якого виявлено антитіла до певного збудника (свідчить про перенесену хворобу або вакцинацію).'],
+          ['Репродуктивне число (R₀)', 'Середня кількість нових заражень, спричинених одним хворим в повністю сприйнятливій популяції.'],
+          ['Карантин', 'Обмеження пересування людей та товарів для запобігання поширенню хвороби.'],
+          ['Ізоляція', 'Відділення хворих або заражених людей від здорових для обмеження поширення інфекції.'],
+          ['Імунітет популяції', 'Непряма захист сприйнятливих членів популяції, коли достатня частка популяції набула імунітету.'],
+        ].map(([term, def]) => `
+          <div class="card" style="padding:18px;">
+            <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">${term}</div>
+            <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">${def}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+<script src="js/app.js"></script>
+<script>
+  function switchTab(tab, btn) {
+    ['firstaid','prevention','myths','glossary'].forEach(t => {
+      document.getElementById('tab-'+t).style.display = t===tab ? 'block' : 'none';
+    });
+    document.querySelectorAll('.edu-tab-btn').forEach(b => {
+      b.style.borderBottomColor = 'transparent';
+      b.style.color = 'var(--text2)';
+    });
+    btn.style.borderBottomColor = 'var(--teal)';
+    btn.style.color = 'var(--teal)';
+  }
+
+  function expandCard(card) {
+    const expand  = card.querySelector('.edu-expand');
+    const hint    = card.querySelector('div:last-child');
+    const isOpen  = expand.style.display === 'block';
+    expand.style.display = isOpen ? 'none' : 'block';
+    hint.textContent = isOpen ? 'Розгорнути →' : 'Згорнути ↑';
+  }
+</script>
+</body>
+</html>
+
