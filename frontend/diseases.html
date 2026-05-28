@@ -112,3 +112,49 @@
         </div>
       </div>`).join('');
   }
+
+  // Search
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) { clearSearch(); return; }
+
+    const diseases = EpiWatch.getDiseases();
+    const results = diseases.filter(d =>
+      d.name.toLowerCase().includes(q) ||
+      d.pathogen.toLowerCase().includes(q) ||
+      d.symptoms.some(s => s.toLowerCase().includes(q)) ||
+      d.type.toLowerCase().includes(q)
+    );
+
+    document.getElementById('searchResults').style.display = 'block';
+    document.getElementById('filtersRow').style.display = 'none';
+    document.getElementById('cardsGrid').style.display = 'none';
+
+    const matchWord = diseases[0]?.symptoms.some(s => s.toLowerCase().includes(q)) ? 'за симптомом' : 'за назвою';
+    document.getElementById('searchMatchInfo').textContent =
+      `Збігів: ${results.length}/${diseases.length} (${Math.round(results.length/diseases.length*100)}%) · пошук ${matchWord}`;
+
+    document.getElementById('searchResultsList').innerHTML = results.length
+      ? results.map(d => `
+          <div class="search-result" onclick="location.href='disease-detail.html?id=${d.id}'">
+            <div class="search-result__main">
+              <div class="search-result__name">${d.name}</div>
+              <div class="search-result__meta">${d.pathogen} · ${d.origin} · ${EpiWatch.formatNumber(d.cases)} випадків</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="badge ${EpiWatch.levelBadgeClass(d.level)}">
+                <span class="badge__dot"></span>${d.levelLabel}
+              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </div>`).join('')
+      : `<div style="color:#5c6378;padding:30px;text-align:center;">Нічого не знайдено за запитом «${q}»</div>`;
+  });
+
+  function clearSearch() {
+    searchInput.value = '';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('filtersRow').style.display = 'flex';
+    document.getElementById('cardsGrid').style.display = 'grid';
+  }
