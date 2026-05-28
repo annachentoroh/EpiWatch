@@ -24,3 +24,37 @@
       </div>
       <p class="search-hint" id="searchHint">Введіть симптом (лихоманка, кашель, висипка...) або назву захворювання</p>
     </div>
+
+    <!-- SEARCH RESULTS (hidden by default) -->
+    <div id="searchResults" style="display:none;margin-bottom:32px;" class="anim">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div style="font-family:var(--font-display);font-size:17px;font-weight:600;">Результати пошуку</div>
+        <div id="searchMatchInfo" style="font-size:13px;color:#9aa0b4;"></div>
+      </div>
+      <div id="searchResultsList"></div>
+      <button class="btn btn--ghost" style="margin-top:12px;" onclick="clearSearch()">← Показати всі захворювання</button>
+    </div>
+
+    <!-- FILTERS ROW -->
+    <div class="filters anim anim-1" id="filtersRow">
+      <div class="filter-group">
+        <label>Тип</label>
+        <select class="filter-select" id="filterDType" onchange="renderCards()">
+          <option value="">Всі типи</option>
+          <option>Вірус</option>
+          <option>Бактерія</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Рівень небезпеки</label>
+        <select class="filter-select" id="filterDLevel" onchange="renderCards()">
+          <option value="">Всі рівні</option>
+          <option value="normal">Нормальний</option>
+          <option value="medium">Середній</option>
+          <option value="danger">Небезпечний</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;align-items:flex-end;">
+        <span id="totalCount" style="font-size:13px;color:#5c6378;"></span>
+      </div>
+    </div>
