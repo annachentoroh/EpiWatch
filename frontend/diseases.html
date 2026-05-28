@@ -58,3 +58,57 @@
         <span id="totalCount" style="font-size:13px;color:#5c6378;"></span>
       </div>
     </div>
+
+        <!-- DISEASE CARDS GRID -->
+    <div id="cardsGrid" class="anim anim-2" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>
+
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+<script src="js/app.js"></script>
+<script>
+  let allDiseases = [];
+
+  function renderCards() {
+    allDiseases = EpiWatch.getDiseases();
+    const typeF  = document.getElementById('filterDType').value;
+    const levelF = document.getElementById('filterDLevel').value;
+    let filtered = allDiseases;
+    if (typeF)  filtered = filtered.filter(d => d.type === typeF);
+    if (levelF) filtered = filtered.filter(d => d.level === levelF);
+
+    document.getElementById('totalCount').textContent = `Показано: ${filtered.length} захворювань`;
+
+    const grid = document.getElementById('cardsGrid');
+    grid.innerHTML = filtered.map(d => `
+      <div class="disease-card" onclick="location.href='disease-detail.html?id=${d.id}'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div class="disease-card__name">${d.name}</div>
+          <span class="badge ${EpiWatch.levelBadgeClass(d.level)}">
+            <span class="badge__dot"></span>${d.levelLabel}
+          </span>
+        </div>
+        <div class="disease-card__meta">${d.origin} · ${d.type}: ${d.pathogen}</div>
+        <div class="disease-card__stats">
+          <div class="disease-card__stat">
+            <label>Випадки</label>
+            <span>${EpiWatch.formatNumber(d.cases)}</span>
+          </div>
+          <div class="disease-card__stat">
+            <label>Смерті</label>
+            <span style="color:var(--red)">${EpiWatch.formatNumber(d.deaths)}</span>
+          </div>
+          <div class="disease-card__stat">
+            <label>Одужали</label>
+            <span style="color:var(--teal)">${EpiWatch.formatNumber(d.recovered)}</span>
+          </div>
+        </div>
+        <div class="disease-card__footer">
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            ${d.symptoms.slice(0,3).map(s => `<span class="symptom-tag">${s}</span>`).join('')}
+          </div>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa0b4" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>`).join('');
+  }
