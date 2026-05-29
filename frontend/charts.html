@@ -6,6 +6,20 @@
   <title>EpiWatch — Статистика та графіки</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    /* Стилі для випадаючих підказок пошуку */
+    .search-suggest-wrap { position: relative; min-width: 180px; }
+    .search-suggest-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #1e2330; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); z-index: 100;
+      max-height: 200px; overflow-y: auto; display: none;
+    }
+    .search-suggest-item {
+      padding: 8px 12px; color: var(--text2); cursor: pointer; font-size: 13px;
+    }
+    .search-suggest-item:hover { background: rgba(255,255,255,0.05); color: var(--teal); }
+  </style>
 </head>
 <body>
 
@@ -23,15 +37,15 @@
     <div class="stat-cards anim anim-1">
       <div class="stat-card">
         <div class="stat-card__label">Всього випадків</div>
-        <div class="stat-card__value teal">232K</div>
+        <div class="stat-card__value teal" id="totalCasesCard">232K</div>
       </div>
       <div class="stat-card red">
         <div class="stat-card__label">Смертей (загалом)</div>
-        <div class="stat-card__value red">3.1K</div>
+        <div class="stat-card__value red" id="totalDeathsCard">3.1K</div>
       </div>
       <div class="stat-card yellow">
         <div class="stat-card__label">Одужали</div>
-        <div class="stat-card__value yellow">225K</div>
+        <div class="stat-card__value yellow" id="totalRecoveredCard">225K</div>
       </div>
     </div>
 
@@ -43,13 +57,10 @@
           <div style="font-size:13px;color:#9aa0b4;margin-top:2px;">Нові випадки по тижнях</div>
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-          <select class="filter-select" id="chartDisease" style="min-width:180px;">
-            <option value="hantavirus">Хантавірус</option>
-            <option value="dengue">Гарячка денге</option>
-            <option value="mpox">Мавпяча віспа</option>
-            <option value="cholera">Холера</option>
-            <option value="measles">Кір</option>
-          </select>
+          <div class="search-suggest-wrap">
+            <input type="text" class="filter-select" id="diseaseSearchInput" placeholder="Введіть хворобу..." autocomplete="off" style="min-width:180px;">
+            <div class="search-suggest-dropdown" id="diseaseSuggestBox"></div>
+          </div>
           <div class="time-tabs">
             <button class="time-tab" data-period="7">7 дн</button>
             <button class="time-tab" data-period="30">30 дн</button>
@@ -85,25 +96,21 @@
       <div class="chart-header">
         <div class="chart-title">Порівняння регіонів</div>
         <div style="display:flex;gap:12px;align-items:center;">
-          <select class="filter-select" id="chartCountry1" style="min-width:140px;">
-            <option>Угорщина</option>
-            <option selected>Україна</option>
-            <option>Таїланд</option>
-            <option>Єгипет</option>
-          </select>
+          <div class="search-suggest-wrap">
+            <input type="text" class="filter-select" id="countrySearchInput1" placeholder="Країна 1..." autocomplete="off">
+            <div class="search-suggest-dropdown" id="countrySuggestBox1"></div>
+          </div>
           <span style="color:#5c6378;font-size:13px;">vs</span>
-          <select class="filter-select" id="chartCountry2" style="min-width:140px;">
-            <option selected>Угорщина</option>
-            <option>Україна</option>
-            <option>Таїланд</option>
-            <option>Єгипет</option>
-          </select>
+          <div class="search-suggest-wrap">
+            <input type="text" class="filter-select" id="countrySearchInput2" placeholder="Країна 2..." autocomplete="off">
+            <div class="search-suggest-dropdown" id="countrySuggestBox2"></div>
+          </div>
         </div>
       </div>
       <div style="height:220px;position:relative;display:flex;align-items:center;justify-content:center;">
         <div style="color:#5c6378;font-size:14px;text-align:center;">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="display:block;margin:0 auto 10px;opacity:.4"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          Порівняльні дані завантажуються через API (Backend)
+          Введіть країни для порівняння даних через API
         </div>
       </div>
     </div>
