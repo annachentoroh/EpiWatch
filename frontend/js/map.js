@@ -110,4 +110,31 @@ function applyMapFilters() {
   }
 }
 
+// Level filter (legend buttons)
+function filterByLevel(level) {
+  document.querySelectorAll('.legend-btn').forEach(b => b.classList.remove('active-legend'));
+  const btn = document.querySelector(`.legend-btn[data-level="${level}"]`);
+  if (btn) btn.classList.add('active-legend');
+
+  let filtered = level === 'all' ? EpiWatch.getDiseases() : EpiWatch.getDiseases().filter(d => d.level === level);
+  renderMarkers(filtered);
+  updateMapStats(filtered);
+}
+
+function detectUserRegion() {
+  const box = document.getElementById('regionBox');
+  if (!box) return;
+  box.textContent = 'Визначення регіону...';
+
+  // Simulate geolocation / IP detection
+  setTimeout(() => {
+    box.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="badge badge--green"><span class="badge__dot"></span>Ваш регіон: Україна</span>
+        <span style="color:#9aa0b4;font-size:13px;">Активних загроз у вашому регіоні: <strong style="color:#ffd166;">1</strong></span>
+        <a href="disease-detail.html?id=measles" style="color:#00c9a7;font-size:13px;text-decoration:underline;">Кір — дізнатись більше →</a>
+      </div>`;
+  }, 1200);
+}
+
 document.addEventListener('DOMContentLoaded', initMap);
