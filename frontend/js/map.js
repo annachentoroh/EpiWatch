@@ -25,6 +25,7 @@ function initMap() {
   const diseases = EpiWatch.getDiseases();
   renderMarkers(diseases);
   updateMapStats(diseases);
+  detectUserRegion();
 }
 
 function createMarkerIcon(level) {
@@ -55,6 +56,58 @@ function renderMarkers(diseases) {
     markerLayer.addLayer(marker);
     allMarkers.push(marker);
   });
+}
+
+function buildPopup(d) {
+  const dateStr = new Date(d.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
+  const riskPct = Math.round((d.deaths / d.cases) * 100);
+
+  return `
+    <div class="epi-popup">
+      <h3>${d.name}</h3>
+      <div class="meta">${dateStr} — ${d.country}</div>
+      <div class="row"><label>Сума випадків:</label><span>${d.cases.toLocaleString('uk-UA')}</span></div>
+      <div class="row"><label>Ризик захворення:</label><span>${riskPct}%</span></div>
+      <div class="advice">${d.prevention[0]}</div>
+      <button class="detail-btn" onclick="window.location.href='disease-detail.html?id=${d.id}'">Детальніше</button>
+    </div>`;
+}
+
+function updateMapStats(diseases) {
+  const totalCases = diseases.reduce((s, d) => s + d.cases, 0);
+  const countries = [...new Set(diseases.map(d => d.country))].length;
+  const outbreaks = diseases.length;
+
+  const el = id => document.getElementById(id);
+  if (el('statOutbreaks')) el('statOutbreaks').textContent = outbreaks;
+  if (el('statCountries')) el('statCountries').textContent = countries + '+';
+  if (el('statCases')) el('statCases').textContent = EpiWatch.formatNumber(totalCases);
+}
+
+// Filter logic
+function applyMapFilters() {
+  const country  = document.getElementById('filterCountry')?.value  || '';
+  const pathType = document.getElementById('filterType')?.value     || '';
+  const pathogen = document.getElementById('filterPathogen')?.value || '';
+  const symptom  = document.getElementById('filterSymptom')?.value  || '';
+  const view     = document.getElementById('viewToggle')?.dataset.view || 'world';
+
+  let filtered = EpiWatch.getDiseases();
+
+  if (country)  filtered = filtered.filter(d => d.country === country);
+  if (pathType) filtered = filtered.filter(d => d.type === pathType);
+  if (pathogen) filtered = filtered.filter(d => d.pathogen.toLowerCase().includes(pathogen.toLowerCase()));
+  if (symptom)  filtered = filtered.filter(d => d.symptoms.some(s => s.toLowerCase().includes(symptom.toLowerCase())));
+  if (view === 'ukraine') filtered = filtered.filter(d => d.country === 'Україна');
+
+  renderMarkers(filtered);
+  updateMapStats(filtered);
+
+  if (filtered.length && epiMap) {
+    const lats = filtered.map(d => d.lat);
+    const lngs = filtered.map(d => d.lng);
+    epiMap.fitBounds([[Math.min(...lats)-5, Math.min(...lngs)-5], [Math.max(...lats)+5, Math.max(...lngs)+5]]);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
