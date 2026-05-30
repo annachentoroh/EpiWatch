@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiWatch — Деталі захворювання</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<main class="page">
+  <div class="container" id="detailContent">
+    <div style="color:#5c6378;padding:80px;text-align:center;">Завантаження...</div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const id = new URLSearchParams(window.location.search).get('id');
+    const d = EpiWatch.getDiseaseById(id);
+    const content = document.getElementById('detailContent');
+
+    if (!d) {
+      content.innerHTML = `<div style="padding:80px;text-align:center;">Захворювання не знайдено. <a href="diseases.html">Повернутися</a></div>`;
+      return;
+    }
+    document.title = `EpiWatch — ${d.name}`;
+    
+  });
+</script>
+</body>
+</html>
