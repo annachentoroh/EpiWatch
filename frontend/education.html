@@ -245,26 +245,69 @@
     </div>
 
     <!-- TAB: ГЛОСАРІЙ -->
-    <div id="tab-glossary"  class="anim">
+    <div id="tab-glossary" class="anim" style="display:none;">
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;">
-        ${[
-          ['Епідемія', 'Значне збільшення кількості випадків захворювання в конкретному регіоні за визначений проміжок часу понад очікуваний рівень.'],
-          ['Пандемія', 'Епідемія, яка охоплює кілька країн або континентів, торкаючись значної частини населення світу.'],
-          ['Ендемія', 'Постійна наявність певного захворювання або інфекційного агента в конкретному географічному регіоні.'],
-          ['Інкубаційний період', 'Проміжок часу між первинним зараженням і появою перших симптомів хвороби.'],
-          ['Летальність (CFR)', 'Відсоток смертей від загальної кількості підтверджених випадків захворювання.'],
-          ['Зоонозна хвороба', 'Захворювання, яке природно передається від тварин до людей (наприклад, хантавірус, пташиний грип).'],
-          ['Вектор', 'Організм (наприклад, комар, кліщ), який переносить збудника захворювання від однієї тварини або людини до іншої.'],
-          ['Серопоширеність', 'Відсоток населення, у крові якого виявлено антитіла до певного збудника (свідчить про перенесену хворобу або вакцинацію).'],
-          ['Репродуктивне число (R₀)', 'Середня кількість нових заражень, спричинених одним хворим в повністю сприйнятливій популяції.'],
-          ['Карантин', 'Обмеження пересування людей та товарів для запобігання поширенню хвороби.'],
-          ['Ізоляція', 'Відділення хворих або заражених людей від здорових для обмеження поширення інфекції.'],
-          ['Імунітет популяції', 'Непряма захист сприйнятливих членів популяції, коли достатня частка популяції набула імунітету.'],
-        ].map(([term, def]) => `
-          <div class="card" style="padding:18px;">
-            <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">${term}</div>
-            <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">${def}</div>
-          </div>`).join('')}
+    
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Епідемія</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Значне збільшення кількості випадків захворювання в конкретному регіоні за визначений проміжок часу понад очікуваний рівень.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Пандемія</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Епідемія, яка охоплює кілька країн або континентів, торкаючись значної частини населення світу.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Ендемія</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Постійна наявність певного захворювання або інфекційного агента в конкретному географічному регіоні.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Інкубаційний період</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Проміжок часу між первинним зараженням і появою перших симптомів хвороби.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Летальність (CFR)</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Відсоток смертей від загальної кількості підтверджених випадків захворювання.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Зоонозна хвороба</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Захворювання, яке природно передається від тварин до людей (наприклад, хантавірус, пташиний грип).</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Вектор</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Організм (наприклад, комар, кліщ), який переносить збудника захворювання від однієї тварини або людини до іншої.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Серопоширеність</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Відсоток населення, у крові якого виявлено антитіла до певного збудника (свідчить про перенесену хворобу або вакцинацію).</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Репродуктивне число (R₀)</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Середня кількість нових заражень, спричинених одним хворим в повністю сприйнятливій популяції.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Карантин</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Обмеження пересування людей та товарів для запобігання поширенню хвороби.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Ізоляція</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Відділення хворих або заражених людей від здорових для обмеження поширення інфекції.</div>
+        </div>
+
+        <div class="card" style="padding:18px;">
+          <div style="font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--teal);margin-bottom:6px;">Імунітет популяції</div>
+          <div style="font-size:13px;color:#9aa0b4;line-height:1.6;">Непрямий захист сприйнятливих членів популяції, коли достатня частка популяції набула імунітету.</div>
+        </div>
+
       </div>
     </div>
 
