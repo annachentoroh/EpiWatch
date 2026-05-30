@@ -108,7 +108,7 @@ content.innerHTML = `
         <div>
           <div class="card" style="margin-bottom:20px;border-color:rgba(0,201,167,.25);">
             <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--teal);margin-bottom:14px;">
-              🛡 Поради для уникнення захворювання
+             Поради для уникнення захворювання
             </h2>
             <ul style="display:flex;flex-direction:column;gap:8px;">
               ${d.prevention.map(p => `
@@ -140,7 +140,37 @@ content.innerHTML = `
           </div>
         </div>
       </div>`;
-    });
+
+    // Build chart for this disease
+    if (typeof Chart !== 'undefined') {
+      Chart.defaults.color = '#9aa0b4';
+      Chart.defaults.font.family = "'DM Sans', sans-serif";
+      const stats = EpiWatch.getStatsData();
+      const dData = stats[d.id] || stats.hantavirus;
+      const color = EpiWatch.levelColor(d.level);
+      new Chart(document.getElementById('mainChart'), {
+        type: 'line',
+        data: {
+          labels: stats.labels,
+          datasets: [{ label: 'Нові випадки', data: dData,
+            borderColor: color, backgroundColor: color+'18',
+            borderWidth: 2.5, pointBackgroundColor: color,
+            pointBorderColor:'#1e2330', pointBorderWidth:2,
+            pointRadius:5, fill:true, tension:0.4 }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{display:false},
+            tooltip:{ backgroundColor:'#1e2330', borderColor:'rgba(255,255,255,.1)', borderWidth:1, padding:10 }
+          },
+          scales:{
+            x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#5c6378'} },
+            y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#5c6378', callback:v=>EpiWatch.formatNumber(v)} }
+          }
+        }
+      });
+    }
+  });
 </script>
 </body>
 </html>
