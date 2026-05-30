@@ -26,7 +26,21 @@
       return;
     }
     document.title = `EpiWatch — ${d.name}`;
-    
+    const riskPct = Math.round((d.deaths / d.cases) * 100);
+content.innerHTML = `
+  <div class="breadcrumb anim">
+    <a href="diseases.html">Захворювання</a> › <span>${d.name}</span>
+  </div>
+  <div class="detail-header anim-1" style="display:flex; justify-content:space-between; margin-bottom:28px;">
+    <h1>${d.name}</h1>
+    <span class="badge ${EpiWatch.levelBadgeClass(d.level)}">${d.levelLabel}</span>
+  </div>
+  <div class="stat-cards anim-2" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:16px;">
+    <div class="stat-card">Всього: ${d.cases.toLocaleString('uk-UA')}</div>
+    <div class="stat-card red">Смертей: ${d.deaths.toLocaleString('uk-UA')}</div>
+    <div class="stat-card yellow">Летальність: ${riskPct}%</div>
+  </div>
+`;
   });
 </script>
 </body>
