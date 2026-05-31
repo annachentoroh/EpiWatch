@@ -113,7 +113,7 @@
       </div>`).join('');
   }
 
-  // Search
+  //Search
   const searchInput = document.getElementById('searchInput');
   searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim().toLowerCase();
@@ -159,7 +159,7 @@
     document.getElementById('cardsGrid').style.display = 'grid';
   }
 
-  // Init from URL query
+  //Init from URL query
   document.addEventListener('DOMContentLoaded', () => {
     renderCards();
     const params = new URLSearchParams(window.location.search);
