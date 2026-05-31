@@ -1,6 +1,5 @@
 const EpiWatch = (() => {
 
-  //Демо-дані хвороб
   const DISEASES = [
     {
       id: 'hantavirus',
@@ -127,10 +126,20 @@ const EpiWatch = (() => {
     measles:    [310, 390, 480, 620, 810, 1020, 1200],
   };
 
-  //Utilities
+  // Utilities
   function getDiseases() { return DISEASES; }
   function getDiseaseById(id) { return DISEASES.find(d => d.id === id); }
   function getStatsData() { return STATS_DATA; }
+
+  // Динамічні інструменти генерації унікальних списків для фільтрації
+  function getUniqueCountries() { return [...new Set(DISEASES.map(d => d.country))]; }
+  function getUniqueTypes() { return [...new Set(DISEASES.map(d => d.type))]; }
+  function getUniquePathogens() { return [...new Set(DISEASES.map(d => d.pathogen))]; }
+  function getUniqueSymptoms() { 
+    let s = []; 
+    DISEASES.forEach(d => s = s.concat(d.symptoms)); 
+    return [...new Set(s)]; 
+  }
 
   function formatNumber(n) {
     if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
@@ -145,7 +154,6 @@ const EpiWatch = (() => {
     return { normal: 'badge--green', medium: 'badge--yellow', danger: 'badge--red' }[level] || '';
   }
 
-  //Set active nav link
   function setActiveNav() {
     const path = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav__links a').forEach(a => {
@@ -156,7 +164,6 @@ const EpiWatch = (() => {
     });
   }
 
-  //Nav HTML
   const NAV_HTML = `
   <nav class="nav">
     <a href="index.html" class="nav__logo">
@@ -195,7 +202,6 @@ const EpiWatch = (() => {
     if (footerEl) footerEl.outerHTML = FOOTER_HTML;
     setActiveNav();
 
-    //Global search
     const gs = document.getElementById('globalSearch');
     if (gs) {
       gs.addEventListener('keydown', e => {
@@ -206,7 +212,11 @@ const EpiWatch = (() => {
     }
   }
 
-  return { getDiseases, getDiseaseById, getStatsData, formatNumber, levelColor, levelBadgeClass, injectShell, NAV_HTML, FOOTER_HTML };
+  return { 
+    getDiseases, getDiseaseById, getStatsData, 
+    getUniqueCountries, getUniqueTypes, getUniquePathogens, getUniqueSymptoms,
+    formatNumber, levelColor, levelBadgeClass, injectShell, NAV_HTML, FOOTER_HTML 
+  };
 })();
 
 document.addEventListener('DOMContentLoaded', () => EpiWatch.injectShell());
