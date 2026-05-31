@@ -1,6 +1,17 @@
 let epiMap = null;
 let markerLayer = null;
 
+//Асинхронні обгортки для майбутнього підключення бекенду
+async function fetchFilteredMapDataFromServer(payload) {
+  /* 
+  try {
+    const res = await fetch('/api/map-filter', { method: 'POST', body: JSON.stringify(payload) });
+    return await res.json();
+  } catch(e) { console.error(e); }
+  */
+  return EpiWatch.getDiseases(); 
+}
+
 function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
@@ -25,7 +36,8 @@ function initMap() {
   const diseases = EpiWatch.getDiseases();
   renderMarkers(diseases);
   updateMapStats(diseases);
-  detectUserRegion();
+  setupAutosuggestFilters();
+  setupRegionCustomSearch();
 }
 
 function createMarkerIcon(level) {
@@ -45,22 +57,17 @@ function createMarkerIcon(level) {
 
 function renderMarkers(diseases) {
   markerLayer.clearLayers();
-  allMarkers = [];
-
   diseases.forEach(d => {
     const icon = createMarkerIcon(d.level);
     const marker = L.marker([d.lat, d.lng], { icon })
       .bindPopup(buildPopup(d), { maxWidth: 260, className: 'epi-popup-wrap' });
-
-    marker._diseaseData = d;
     markerLayer.addLayer(marker);
-    allMarkers.push(marker);
   });
 }
 
 function buildPopup(d) {
   const dateStr = new Date(d.date).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
-  const riskPct = Math.round((d.deaths / d.cases) * 100);
+  const riskPct = d.cases > 0 ? Math.round((d.deaths / d.cases) * 100) : 0;
 
   return `
     <div class="epi-popup">
@@ -80,19 +87,76 @@ function updateMapStats(diseases) {
 
   const el = id => document.getElementById(id);
   if (el('statOutbreaks')) el('statOutbreaks').textContent = outbreaks;
-  if (el('statCountries')) el('statCountries').textContent = countries + '+';
+  if (el('statCountries')) el('statCountries').textContent = countries + (countries > 0 ? '+' : '');
   if (el('statCases')) el('statCases').textContent = EpiWatch.formatNumber(totalCases);
 }
 
-// Filter logic
-function applyMapFilters() {
-  const country  = document.getElementById('filterCountry')?.value  || '';
-  const pathType = document.getElementById('filterType')?.value     || '';
-  const pathogen = document.getElementById('filterPathogen')?.value || '';
-  const symptom  = document.getElementById('filterSymptom')?.value  || '';
-  const view     = document.getElementById('viewToggle')?.dataset.view || 'world';
+// Логіка обробки інтерактивного пошуку для 4 полів фільтрації
+function setupAutosuggestFilters() {
+  const config = [
+    { inputId: 'mapCountryInput', dropId: 'mapCountryDrop', dataFn: EpiWatch.getUniqueCountries, placeholder: 'Всі країни', errorText: '🏳 Країна без спалахів' },
+    { inputId: 'mapTypeInput', dropId: 'mapTypeDrop', dataFn: EpiWatch.getUniqueTypes, placeholder: 'Всі типи', errorText: '🔬 Тип не знайдено' },
+    { inputId: 'mapPathogenInput', dropId: 'mapPathogenDrop', dataFn: EpiWatch.getUniquePathogens, placeholder: 'Всі збудники', errorText: '🦠 Збудник відсутній' },
+    { inputId: 'mapSymptomInput', dropId: 'mapSymptomDrop', dataFn: EpiWatch.getUniqueSymptoms, placeholder: 'Всі симптоми', errorText: '❌ Симптом не знайдено' }
+  ];
 
-  let filtered = EpiWatch.getDiseases();
+  config.forEach(cfg => {
+    const input = document.getElementById(cfg.inputId);
+    const drop = document.getElementById(cfg.dropId);
+    if (!input || !drop) return;
+
+    input.addEventListener('input', () => {
+      const val = input.value.toLowerCase().trim();
+      drop.innerHTML = '';
+      if (!val) { drop.style.display = 'none'; return; }
+
+      const list = cfg.dataFn();
+      const matches = list.filter(item => item.toLowerCase().includes(val));
+      drop.style.display = 'block';
+
+      if (matches.length > 0) {
+        matches.forEach(match => {
+          const el = document.createElement('div');
+          el.className = 'search-suggest-item';
+          el.textContent = match;
+          el.addEventListener('click', () => {
+            input.value = match;
+            drop.style.display = 'none';
+          });
+          drop.appendChild(el);
+        });
+      } else {
+        const fallback = document.createElement('div');
+        fallback.className = 'search-suggest-item';
+        fallback.style.color = '#ff4d6d';
+        fallback.style.cursor = 'default';
+        fallback.textContent = cfg.errorText;
+        drop.appendChild(fallback);
+      }
+    });
+  });
+
+  //Закриття підказок при кліку мимо поля
+  document.addEventListener('click', (e) => {
+    config.forEach(cfg => {
+      const input = document.getElementById(cfg.inputId);
+      const drop = document.getElementById(cfg.dropId);
+      if (drop && input && !input.contains(e.target)) drop.style.display = 'none';
+    });
+  });
+}
+
+//Застосування фільтрації до карти
+async function applyMapFilters() {
+  const country = document.getElementById('mapCountryInput')?.value || '';
+  const pathType = document.getElementById('mapTypeInput')?.value || '';
+  const pathogen = document.getElementById('mapPathogenInput')?.value || '';
+  const symptom = document.getElementById('mapSymptomInput')?.value || '';
+  const view = document.getElementById('viewToggle')?.dataset.view || 'world';
+
+  //Робимо заготовку об'єкта під майбутній POST запит 
+  const filterPayload = { country, pathType, pathogen, symptom, view };
+  let filtered = await fetchFilteredMapDataFromServer(filterPayload);
 
   if (country)  filtered = filtered.filter(d => d.country === country);
   if (pathType) filtered = filtered.filter(d => d.type === pathType);
@@ -106,11 +170,10 @@ function applyMapFilters() {
   if (filtered.length && epiMap) {
     const lats = filtered.map(d => d.lat);
     const lngs = filtered.map(d => d.lng);
-    epiMap.fitBounds([[Math.min(...lats)-5, Math.min(...lngs)-5], [Math.max(...lats)+5, Math.max(...lngs)+5]]);
+    epiMap.fitBounds([[Math.min(...lats)-4, Math.min(...lngs)-4], [Math.max(...lats)+4, Math.max(...lngs)+4]]);
   }
 }
 
-// Level filter (legend buttons)
 function filterByLevel(level) {
   document.querySelectorAll('.legend-btn').forEach(b => b.classList.remove('active-legend'));
   const btn = document.querySelector(`.legend-btn[data-level="${level}"]`);
@@ -121,20 +184,78 @@ function filterByLevel(level) {
   updateMapStats(filtered);
 }
 
-function detectUserRegion() {
+//Динамічний пошук регіону / країни користувачем
+function setupRegionCustomSearch() {
+  const rInput = document.getElementById('userRegionInput');
+  const rDrop = document.getElementById('userRegionDrop');
+  const box = document.getElementById('regionBox');
+  if (!rInput || !rDrop || !box) return;
+
+  //Початкова симуляція автоматичного визначення
+  setTimeout(() => {
+    renderRegionStatus('Україна');
+  }, 1000);
+
+  rInput.addEventListener('input', () => {
+    const val = rInput.value.toLowerCase().trim();
+    rDrop.innerHTML = '';
+    if (!val) { rDrop.style.display = 'none'; return; }
+
+    const countries = EpiWatch.getUniqueCountries();
+    const matches = countries.filter(c => c.toLowerCase().includes(val));
+    rDrop.style.display = 'block';
+
+    if (matches.length > 0) {
+      matches.forEach(c => {
+        const item = document.createElement('div');
+        item.className = 'search-suggest-item';
+        item.textContent = c;
+        item.addEventListener('click', () => {
+          rInput.value = c;
+          rDrop.style.display = 'none';
+          box.textContent = `Оновлення аналітики для регіону ${c}...`;
+          setTimeout(() => renderRegionStatus(c), 800); //Імітуємо завантаження
+        });
+        rDrop.appendChild(item);
+      });
+    } else {
+      const fallback = document.createElement('div');
+      fallback.className = 'search-suggest-item';
+      fallback.style.color = '#ff4d6d';
+      fallback.style.cursor = 'default';
+      fallback.textContent = '❌ Немає спалахів у цьому регіоні';
+      rDrop.appendChild(fallback);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (rDrop && !rInput.contains(e.target)) rDrop.style.display = 'none';
+  });
+}
+
+//Рендеринг віджета локальних загроз
+function renderRegionStatus(countryName) {
   const box = document.getElementById('regionBox');
   if (!box) return;
-  box.textContent = 'Визначення регіону...';
 
-  // Simulate geolocation / IP detection
-  setTimeout(() => {
+  const diseases = EpiWatch.getDiseases();
+  const localThreats = diseases.filter(d => d.country.toLowerCase() === countryName.toLowerCase());
+
+  if (localThreats.length > 0) {
+    const t = localThreats[0];
     box.innerHTML = `
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-        <span class="badge badge--green"><span class="badge__dot"></span>Ваш регіон: Україна</span>
-        <span style="color:#9aa0b4;font-size:13px;">Активних загроз у вашому регіоні: <strong style="color:#ffd166;">1</strong></span>
-        <a href="disease-detail.html?id=measles" style="color:#00c9a7;font-size:13px;text-decoration:underline;">Кір — дізнатись більше →</a>
+        <span class="badge badge--green"><span class="badge__dot"></span>Ваш регіон: ${countryName}</span>
+        <span style="color:#9aa0b4;font-size:13px;">Активних загроз у вашому регіоні: <strong style="color:#ff4d6d;">${localThreats.length}</strong></span>
+        <a href="disease-detail.html?id=${t.id}" style="color:#00c9a7;font-size:13px;text-decoration:underline;">${t.name} — дізнатись більше →</a>
       </div>`;
-  }, 1200);
+  } else {
+    box.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="badge badge--green" style="background:rgba(0,201,167,0.1); color:#00c9a7;"><span class="badge__dot" style="background:#00c9a7;"></span>Ваш регіон: ${countryName}</span>
+        <span style="color:#9aa0b4;font-size:13px;">🎉 Чудові новини! Активних інфекційних загроз не виявлено.</span>
+      </div>`;
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initMap);
