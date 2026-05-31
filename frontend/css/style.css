@@ -474,6 +474,30 @@ ul { list-style: none; }
   display: flex; align-items: center; justify-content: space-between;
 }
 
+/*DETAIL PAGE*/
+.detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+.info-list { display: flex; flex-direction: column; gap: 10px; }
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px;
+  background: var(--bg2);
+  border-radius: var(--radius-sm);
+}
+.info-row label { font-size: 13px; color: var(--text2); }
+.info-row span { font-size: 13px; font-weight: 500; color: var(--text); }
+.symptom-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.symptom-tag {
+  padding: 4px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 99px;
+  font-size: 12px; color: var(--text2);
+}
+
 /*CHART AREA*/
 .chart-wrap {
   position: relative;
