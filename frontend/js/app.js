@@ -19,6 +19,11 @@ const EpiWatch = (() => {
       lat: 37.0, lng: -95.0,
       country: 'США',
       date: '2024-03-12',
+      sources: [
+        { name: 'WHO Disease Outbreak News', url: 'https://www.who.int/emergencies/disease-outbreak-news' },
+        { name: 'CDC Health Alerts', url: 'https://emergency.cdc.gov/han/' },
+        { name: 'МОЗ України', url: 'https://moz.gov.ua/' }
+      ]
     },
     {
       id: 'dengue',
@@ -38,6 +43,11 @@ const EpiWatch = (() => {
       lat: 14.0, lng: 101.0,
       country: 'Таїланд',
       date: '2024-04-01',
+      sources: [
+        { name: 'WHO Dengue Info', url: 'https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue' },
+        { name: 'CDC Dengue Resources', url: 'https://www.cdc.gov/dengue/' },
+        { name: 'МОЗ України', url: 'https://moz.gov.ua/' }
+      ]
     },
     {
       id: 'mpox',
@@ -57,6 +67,11 @@ const EpiWatch = (() => {
       lat: -4.0, lng: 20.0,
       country: 'ДР Конго',
       date: '2024-02-10',
+      sources: [
+        { name: 'WHO Mpox Factsheet', url: 'https://www.who.int/news-room/fact-sheets/detail/mpox' },
+        { name: 'CDC Mpox Updates', url: 'https://www.cdc.gov/poxvirus/mpox/' },
+        { name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }
+      ]
     },
     {
       id: 'cholera',
@@ -76,6 +91,11 @@ const EpiWatch = (() => {
       lat: 15.5, lng: 48.5,
       country: 'Ємен',
       date: '2024-03-20',
+      sources: [
+        { name: 'WHO Cholera Portal', url: 'https://www.who.int/health-topics/cholera' },
+        { name: 'CDC Cholera Information', url: 'https://www.cdc.gov/cholera/' },
+        { name: 'МОЗ України', url: 'https://moz.gov.ua/' }
+      ]
     },
     {
       id: 'measles',
@@ -95,6 +115,11 @@ const EpiWatch = (() => {
       lat: 48.3, lng: 31.2,
       country: 'Україна',
       date: '2024-04-15',
+      sources: [
+        { name: 'WHO Measles Overview', url: 'https://www.who.int/news-room/fact-sheets/detail/measles' },
+        { name: 'CDC Measles Prevention', url: 'https://www.cdc.gov/measles/' },
+        { name: 'МОЗ України — Вакцинація', url: 'https://moz.gov.ua/' }
+      ]
     },
     {
       id: 'avian_flu',
@@ -114,6 +139,11 @@ const EpiWatch = (() => {
       lat: 30.0, lng: 31.2,
       country: 'Єгипет',
       date: '2024-01-05',
+      sources: [
+        { name: 'WHO Avian Influenza', url: 'https://www.who.int/health-topics/influenza-(avian-and-other-zoonotic)' },
+        { name: 'CDC Bird Flu Alerts', url: 'https://www.cdc.gov/flu/avianflu/' },
+        { name: 'МОЗ України', url: 'https://moz.gov.ua/' }
+      ]
     },
   ];
 
@@ -124,14 +154,13 @@ const EpiWatch = (() => {
     mpox:       [880, 920, 1100, 1450, 1800, 2100, 2400],
     cholera:    [2200, 2600, 3100, 3900, 4200, 4500, 4900],
     measles:    [310, 390, 480, 620, 810, 1020, 1200],
+    avian_flu:  [50, 95, 130, 210, 290, 380, 430]
   };
 
-  // Utilities
   function getDiseases() { return DISEASES; }
   function getDiseaseById(id) { return DISEASES.find(d => d.id === id); }
   function getStatsData() { return STATS_DATA; }
 
-  // Динамічні інструменти генерації унікальних списків для фільтрації
   function getUniqueCountries() { return [...new Set(DISEASES.map(d => d.country))]; }
   function getUniqueTypes() { return [...new Set(DISEASES.map(d => d.type))]; }
   function getUniquePathogens() { return [...new Set(DISEASES.map(d => d.pathogen))]; }
