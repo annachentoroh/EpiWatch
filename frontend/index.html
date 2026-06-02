@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiWatch — Карта епідеміологічної ситуації</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/map.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    /*Стилі для випадаючих підказок на карті */
+    .search-suggest-wrap { position: relative; width: 100%; }
+    .search-suggest-dropdown {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: #1e2330; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); z-index: 1000;
+      max-height: 180px; overflow-y: auto; display: none;
+    }
+    .search-suggest-item {
+      padding: 8px 12px; color: var(--text2); cursor: pointer; font-size: 13px; text-align: left;
+    }
+    .search-suggest-item:hover { background: rgba(255,255,255,0.05); color: var(--teal); }
+    .region-input-inline {
+      background: #1e2330; border: 1px solid var(--border); color: var(--text);
+      padding: 4px 8px; border-radius: var(--radius-sm); font-size: 12px; width: 140px; margin-left: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="nav-placeholder"></div>
+
+<section class="hero anim">
+  <div class="hero__tag">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="12"/></svg>
+    LIVE · Оновлено щойно
+  </div>
+  <h1 class="hero__title">Слідкуй за <em>епідеміями</em> у реальному часі</h1>
+  <p class="hero__sub">EpiWatch — це прорив у сфері цифрового здоров'я, який допоможе вам захиститись від вірусів та подбати про своє здоров'я.</p>
+  <p class="hero__disclaimer">⚠ Ми не замінюємо консультацію лікаря. У разі поганого самопочуття звертайтесь до спеціаліста!</p>
+  <div class="hero__cta">
+    <a href="#map-section" class="btn btn--primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Переглянути карту
+    </a>
+    <a href="test.html" class="btn btn--ghost">Пройти тест на вірус →</a>
+  </div>
+</section>
+
+<main class="page" id="map-section">
+  <div class="container">
+
+    <div class="stat-cards anim anim-1">
+      <div class="stat-card">
+        <div class="stat-card__label">Активні спалахи</div>
+        <div class="stat-card__value teal" id="statOutbreaks">—</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-card__label">Країн під загрозою</div>
+        <div class="stat-card__value yellow" id="statCountries">—</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-card__label">Кількість хворих</div>
+        <div class="stat-card__value red" id="statCases">—</div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;" class="anim anim-2">
+      <div class="legend">
+        <button class="legend-btn btn btn--ghost" style="padding:5px 14px;font-size:13px;" data-level="all" onclick="filterByLevel('all')">Всі</button>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#00c9a7"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="normal" onclick="filterByLevel('normal')">Нормальний</button>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ffd166"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="medium" onclick="filterByLevel('medium')">Середній</button>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#ff4d6d"></div>
+          <button class="legend-btn" style="background:none;border:none;color:#9aa0b4;font-size:13px;cursor:pointer;" data-level="danger" onclick="filterByLevel('danger')">Небезпечний</button>
+        </div>
+      </div>
+      <div class="toggle-tabs">
+        <button class="toggle-tab active" id="viewToggle" data-view="world" onclick="setView('world',this)">Весь світ</button>
+        <button class="toggle-tab" data-view="ukraine" onclick="setView('ukraine',this)">Україна</button>
+      </div>
+    </div>
+
+    <div style="position:relative;" class="anim anim-3">
+      <div id="map">
+        <div class="map-loading" id="mapLoading">
+          <div class="map-loading__spinner"></div>
+          Завантаження карти...
+        </div>
+      </div>
+    </div>
+
+    <div class="filters-grid anim anim-4" style="margin-top:16px;">
+      <div class="filter-group">
+        <label>Країна</label>
+        <div class="search-suggest-wrap">
+          <input type="text" class="filter-select" id="mapCountryInput" placeholder="Всі країни" autocomplete="off">
+          <div class="search-suggest-dropdown" id="mapCountryDrop"></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Тип збудника</label>
+        <div class="search-suggest-wrap">
+          <input type="text" class="filter-select" id="mapTypeInput" placeholder="Всі типи" autocomplete="off">
+          <div class="search-suggest-dropdown" id="mapTypeDrop"></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Збудник</label>
+        <div class="search-suggest-wrap">
+          <input type="text" class="filter-select" id="mapPathogenInput" placeholder="Всі збудники" autocomplete="off">
+          <div class="search-suggest-dropdown" id="mapPathogenDrop"></div>
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Симптом</label>
+        <div class="search-suggest-wrap">
+          <input type="text" class="filter-select" id="mapSymptomInput" placeholder="Всі симптоми" autocomplete="off">
+          <div class="search-suggest-dropdown" id="mapSymptomDrop"></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px;" class="anim anim-4">
+      <button class="btn btn--primary" onclick="applyMapFilters()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4.2"/></svg>
+        Оновити
+      </button>
+    </div>
+
+    <div class="region-box anim anim-5" style="margin-top:24px;">
+      <div class="region-box__label" style="display:flex; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap; gap:10px;">
+        <span>Загрози для вашого регіону</span>
+        <div class="search-suggest-wrap" style="width:auto;">
+          <input type="text" class="region-input-inline" id="userRegionInput" placeholder="Змінити регіон/країну..." autocomplete="off">
+          <div class="search-suggest-dropdown" id="userRegionDrop"></div>
+        </div>
+      </div>
+      <div id="regionBox" style="color:#5c6378;font-size:13px; margin-top:12px;">Визначення регіону...</div>
+    </div>
+
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="js/app.js"></script>
+<script src="js/map.js"></script>
+<script>
+  function setView(view, btn) {
+    document.querySelectorAll('.toggle-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('viewToggle').dataset.view = view;
+    applyMapFilters();
+    if (view === 'ukraine' && epiMap) {
+      epiMap.setView([48.3, 31.2], 5);
+    } else if (epiMap) {
+      epiMap.setView([20, 10], 2);
+    }
+  }
+</script>
+</body>
+</html>

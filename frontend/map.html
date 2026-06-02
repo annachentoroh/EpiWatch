@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiWatch — Карта</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="navbar__logo">EpiWatch</a>
+    <div class="navbar__nav">
+      <a href="map.html" class="active">Карта</a>
+      <a href="#">Графік</a>
+      <a href="#">Тест на вірус</a>
+      <a href="#">Захворювання</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1 class="page-title">Карта епідеміологічної ситуації у світі</h1>
+    <p class="page-subtitle">Актуальна інформація про загрози</p>
+
+    <div class="stats-row">
+      <div class="stat-pill">Активні спалахи: <span>20</span></div>
+      <div class="stat-pill">Країн під загрозою: <span>32</span></div>
+      <div class="stat-pill">Кількість хворих: <span>413</span></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="dot safe"></div> Нормальний</div>
+      <div class="legend-item"><div class="dot warn"></div> Середній</div>
+      <div class="legend-item"><div class="dot danger"></div> Небезпечний</div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">Весь світ</div>
+      <div class="tab">Україна</div>
+    </div>
+
+    <div class="map-layout">
+      <div class="map-area">
+        <div class="map-placeholder" id="map"></div>
+        
+        <div class="mock-popup">
+          <h4>НАЗВА ВІРУСУ</h4>
+          <p><strong>Місце:</strong> Україна</p>
+          <p><strong>Сума випадків:</strong> 0</p>
+          <p><strong>Ризик захворювання:</strong> 0%</p>
+          <p style="color: var(--warn); margin-top: 8px;"><strong>Порада:</strong> Залишайтесь вдома</p>
+          <button class="btn btn--light" style="width: 100%; padding: 8px; margin-top: 12px;">Детальніше</button>
+        </div>
+      </div>
+
+      <div class="sidebar">
+        <h3>Загрози для вашого регіону:</h3>
+        <select class="filter-select"><option>Країна</option></select>
+        <select class="filter-select"><option>Тип збудника</option></select>
+        <select class="filter-select"><option>Збудник</option></select>
+        <select class="filter-select"><option>Симптоми</option></select>
+        <button class="btn">Оновити</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

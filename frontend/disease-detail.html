@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EpiWatch — Деталі захворювання</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div id="nav-placeholder"></div>
+
+<main class="page">
+  <div class="container" id="detailContent">
+    <div style="color:#5c6378;padding:80px;text-align:center;">Завантаження...</div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+<script src="js/app.js"></script>
+<script>
+  let detailChartInstance = null;
+  let activePeriod = 'all';
+
+  function getLabelsForPeriod(period, allLabels) {
+    const sliceMap = { '30': 2, '90': 4, 'all': 7 };
+    return allLabels.slice(-(sliceMap[period] || 7));
+  }
+
+  function getDataForPeriod(period, allData) {
+    const sliceMap = { '30': 2, '90': 4, 'all': 7 };
+    return allData.slice(-(sliceMap[period] || 7));
+  }
+
+  // Асинхронний метод отримання статистики по конкретній хворобі під бекенд Андрія
+  async function fetchDiseaseStatsFromServer(diseaseId) {
+    /* 
+    const res = await fetch(`/api/disease-stats?id=${diseaseId}`);
+    return await res.json();
+    */
+    return EpiWatch.getStatsData();
+  }
+
+  async function buildDetailChart(diseaseId, period) {
+    const canvas = document.getElementById('detailChartCanvas');
+    if (!canvas) return;
+
+    const stats = await fetchDiseaseStatsFromServer(diseaseId);
+    const rawData = stats[diseaseId] || stats.hantavirus;
+    
+    const labels = getLabelsForPeriod(period, stats.labels);
+    const dataValues = getDataForPeriod(period, rawData);
+    
+    const d = EpiWatch.getDiseaseById(diseaseId);
+    const color = d ? EpiWatch.levelColor(d.level) : '#00c9a7';
+
+    if (detailChartInstance) detailChartInstance.destroy();
+
+    detailChartInstance = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Нові випадки',
+          data: dataValues,
+          borderColor: color,
+          backgroundColor: color + '18',
+          borderWidth: 2.5,
+          pointBackgroundColor: color,
+          pointBorderColor: '#1e2330',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1e2330', borderColor: 'rgba(255,255,255,.1)', borderWidth: 1, padding: 10 }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5c6378' } },
+          y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#5c6378', callback: v => EpiWatch.formatNumber(v) } }
+        }
+      }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const id = new URLSearchParams(window.location.search).get('id') || 'hantavirus';
+    const d = EpiWatch.getDiseaseById(id);
+    const content = document.getElementById('detailContent');
+
+    if (!d) {
+      content.innerHTML = `<div style="padding:80px;text-align:center;color:#5c6378;">
+        Захворювання не знайдено. <a href="diseases.html" style="color:var(--teal)">Повернутися</a></div>`;
+      return;
+    }
+
+    document.title = `EpiWatch — ${d.name}`;
+    const riskPct = d.cases > 0 ? Math.round((d.deaths / d.cases) * 100) : 0;
+
+    content.innerHTML = `
+      <div style="margin-bottom:20px;font-size:13px;color:#5c6378;" class="anim">
+        <a href="diseases.html" style="color:#9aa0b4;">Захворювання</a>
+        <span style="margin:0 6px;">›</span>
+        <span style="color:#e8eaf0;">${d.name}</span>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;" class="anim anim-1">
+        <div>
+          <h1 style="font-family:var(--font-display);font-size:34px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;">${d.name}</h1>
+          <div style="font-size:14px;color:#9aa0b4;">${d.origin} · Збудник: <span style="color:#e8eaf0;font-weight:500;">${d.pathogen}</span></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <span class="badge ${EpiWatch.levelBadgeClass(d.level)}" style="font-size:14px;padding:6px 14px;">
+            <span class="badge__dot"></span>${d.levelLabel}
+          </span>
+          <button class="btn btn--primary" onclick="location.href='test.html'">Пройти тест</button>
+        </div>
+      </div>
+
+      <div class="stat-cards anim anim-2">
+        <div class="stat-card">
+          <div class="stat-card__label">Всього заражених</div>
+          <div class="stat-card__value">${d.cases.toLocaleString('uk-UA')}</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-card__label">Смертей</div>
+          <div class="stat-card__value red">${d.deaths.toLocaleString('uk-UA')}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card__label">Летальність</div>
+          <div class="stat-card__value yellow">${riskPct}%</div>
+        </div>
+      </div>
+
+      <div class="detail-grid anim anim-3">
+        <div>
+          <div class="card" style="margin-bottom:20px;">
+            <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:16px;">Властивості</h2>
+            <div class="info-list">
+              <div class="info-row"><label>Тип збудника</label><span>${d.type}</span></div>
+              <div class="info-row"><label>Збудник</label><span>${d.pathogen}</span></div>
+              <div class="info-row"><label>Шлях передачі</label><span>${d.transmission}</span></div>
+              <div class="info-row"><label>Регіони поширення</label><span>${d.regions.join(', ')}</span></div>
+              <div class="info-row"><label>Перший спалах</label><span>${d.origin}</span></div>
+              <div class="info-row"><label>Рівень небезпеки ВООЗ</label>
+                <span style="color:${EpiWatch.levelColor(d.level)}">${d.levelLabel}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;">
+            <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:14px;">Симптоми</h2>
+            <div class="symptom-tags">
+              ${d.symptoms.map(s => `<span class="symptom-tag">${s}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-header">
+              <div class="chart-title">Динаміка поширення</div>
+              <div class="time-tabs">
+                <button class="time-tab" data-period="30">30 дн</button>
+                <button class="time-tab" data-period="90">3 міс</button>
+                <button class="time-tab active" data-period="all">Весь час</button>
+              </div>
+            </div>
+            <div style="height:200px;"><canvas id="detailChartCanvas"></canvas></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:20px;border-color:rgba(0,201,167,.25);">
+            <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--teal);margin-bottom:14px;">
+             Поради для уникнення захворювання
+            </h2>
+            <ul style="display:flex;flex-direction:column;gap:8px;">
+              ${d.prevention.map(p => `
+                <li style="display:flex;gap:10px;font-size:14px;color:#9aa0b4;">
+                  <span style="color:var(--teal);font-weight:700;flex-shrink:0;">✓</span>${p}
+                </li>`).join('')}
+            </ul>
+          </div>
+
+          <div class="card" style="margin-bottom:20px;border-color:rgba(255,209,102,.2);">
+            <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--yellow);margin-bottom:14px;">
+             Що робити при перших симптомах
+            </h2>
+            <ol style="display:flex;flex-direction:column;gap:8px;counter-reset:steps;">
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">1.</span>Ізолюйтеся від інших людей</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">2.</span>Зверніться до лікаря або швидкої допомоги</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">3.</span>Не займайтеся самолікуванням</li>
+              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">4.</span>Повідомте про симптоми МОЗ</li>
+            </ol>
+          </div>
+
+          <div class="card">
+            <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:12px;">Офіційні джерела</h2>
+            <div style="display:flex;flex-direction:column;gap:8px;" id="sourceLinksContainer">
+              ${d.sources.map(src => `
+                <a href="${src.url}" target="_blank" rel="noopener noreferrer" style="color:var(--teal);font-size:13px;display:flex;align-items:center;gap:6px;">
+                  ${src.name} ↗
+                </a>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+      
+    //Ініціалізація графіка
+    if (typeof Chart !== 'undefined') {
+      await buildDetailChart(id, activePeriod);
+
+      //Оживлення табів часу
+      document.querySelectorAll('.time-tab').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activePeriod = btn.dataset.period;
+          await buildDetailChart(id, activePeriod);
+        });
+      });
+    }
+  });
+</script>
+</body>
+</html>
