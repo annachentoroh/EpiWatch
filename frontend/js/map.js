@@ -1,7 +1,8 @@
 let epiMap = null;
 let markerLayer = null;
+let cachedAllDiseases = []; //Кеш для збереження повної бази з сервера для підказок
 
-// Асинхронний запит до твого нового бекенду
+//Асинхронний запит до бекенду
 async function fetchFilteredMapDataFromServer(payload) {
   try {
     const res = await fetch('/api/map-filter', { 
@@ -14,11 +15,11 @@ async function fetchFilteredMapDataFromServer(payload) {
     return await res.json();
   } catch(e) { 
     console.error("Помилка завантаження даних з сервера:", e); 
-    return []; // повертаємо порожній масив у разі помилки
+    return []; 
   }
 }
 
-// Функція ініціалізації карти (тепер асинхронна)
+//Функція ініціалізації карти
 async function initMap() {
   const mapEl = document.getElementById('map');
   if (!mapEl) return;
@@ -41,10 +42,10 @@ async function initMap() {
 
   markerLayer = L.layerGroup().addTo(epiMap);
 
-  // ПРАВИЛЬНО: Отримуємо дані з сервера при старті, а не локально!
-  const initialDiseases = await fetchFilteredMapDataFromServer({});
-  renderMarkers(initialDiseases);
-  updateMapStats(initialDiseases);
+  //Завантажуємо повну базу для ініціалізації та кешу підказок
+  cachedAllDiseases = await fetchFilteredMapDataFromServer({});
+  renderMarkers(cachedAllDiseases);
+  updateMapStats(cachedAllDiseases);
   
   setupAutosuggestFilters();
   setupRegionCustomSearch();
@@ -102,12 +103,22 @@ function updateMapStats(diseases) {
   if (el('statCases')) el('statCases').textContent = EpiWatch.formatNumber(totalCases);
 }
 
+//Підказки генеруються на основі реальних даних із сервера(cachedAllDiseases)
 function setupAutosuggestFilters() {
+  const getServerCountries = () => [...new Set(cachedAllDiseases.map(d => d.country))];
+  const getServerTypes = () => [...new Set(cachedAllDiseases.map(d => d.type))];
+  const getServerPathogens = () => [...new Set(cachedAllDiseases.map(d => d.pathogen))];
+  const getServerSymptoms = () => {
+    let s = [];
+    cachedAllDiseases.forEach(d => { if(d.symptoms) s = s.concat(d.symptoms); });
+    return [...new Set(s)];
+  };
+
   const config = [
-    { inputId: 'mapCountryInput', dropId: 'mapCountryDrop', dataFn: EpiWatch.getUniqueCountries, placeholder: 'Всі країни', errorText: '🏳 Країна без спалахів' },
-    { inputId: 'mapTypeInput', dropId: 'mapTypeDrop', dataFn: EpiWatch.getUniqueTypes, placeholder: 'Всі типи', errorText: '🔬  Тип не знайдено' },
-    { inputId: 'mapPathogenInput', dropId: 'mapPathogenDrop', dataFn: EpiWatch.getUniquePathogens, placeholder: 'Всі збудники', errorText: '🦠 Збудник відсутній' },
-    { inputId: 'mapSymptomInput', dropId: 'mapSymptomDrop', dataFn: EpiWatch.getUniqueSymptoms, placeholder: 'Всі симптоми', errorText: '❌ Симптом не знайдено' }
+    { inputId: 'mapCountryInput', dropId: 'mapCountryDrop', dataFn: getServerCountries, placeholder: 'Всі країни', errorText: '🏳  Країна без спалахів' },
+    { inputId: 'mapTypeInput', dropId: 'mapTypeDrop', dataFn: getServerTypes, placeholder: 'Всі типу', errorText: '🔬  Тип не знайдено' },
+    { inputId: 'mapPathogenInput', dropId: 'mapPathogenDrop', dataFn: getServerPathogens, placeholder: 'Всі збудники', errorText: '🦠 Збудник відсутній' },
+    { inputId: 'mapSymptomInput', dropId: 'mapSymptomDrop', dataFn: getServerSymptoms, placeholder: 'Всі симптоми', errorText: '❌ Симптом не знайдено' }
   ];
 
   config.forEach(cfg => {
@@ -121,7 +132,7 @@ function setupAutosuggestFilters() {
       if (!val) { drop.style.display = 'none'; return; }
 
       const list = cfg.dataFn();
-      const matches = list.filter(item => item.toLowerCase().includes(val));
+      const matches = list.filter(item => item && item.toLowerCase().includes(val));
       drop.style.display = 'block';
 
       if (matches.length > 0) {
@@ -155,6 +166,7 @@ function setupAutosuggestFilters() {
   });
 }
 
+//Клієнтська фільтрація робиться сервером 
 async function applyMapFilters() {
   const country = document.getElementById('mapCountryInput')?.value || '';
   const pathType = document.getElementById('mapTypeInput')?.value || '';
@@ -163,6 +175,7 @@ async function applyMapFilters() {
   const view = document.getElementById('viewToggle')?.dataset.view || 'world';
 
   const filterPayload = { country, pathType, pathogen, symptom, view };
+  
   let filtered = await fetchFilteredMapDataFromServer(filterPayload);
 
   renderMarkers(filtered);
@@ -177,13 +190,12 @@ async function applyMapFilters() {
   }
 }
 
-// Фільтрація за рівнем небезпеки
+//Фільтрація за рівнем небезпеки (клієнтський швидкий фільтр по поточному кешу)
 async function filterByLevel(level) {
   document.querySelectorAll('.legend-btn').forEach(b => b.classList.remove('active-legend'));
   const btn = document.querySelector(`.legend-btn[data-level="${level}"]`);
   if (btn) btn.classList.add('active-legend');
 
-  // Запитуємо актуальні дані з сервера і фільтруємо їх на клієнті для швидкості
   const allData = await fetchFilteredMapDataFromServer({});
   let filtered = level === 'all' ? allData : allData.filter(d => d.level === level);
   
@@ -206,8 +218,8 @@ function setupRegionCustomSearch() {
     rDrop.innerHTML = '';
     if (!val) { rDrop.style.display = 'none'; return; }
 
-    const countries = EpiWatch.getUniqueCountries();
-    const matches = countries.filter(c => c.toLowerCase().includes(val));
+    const countries = [...new Set(cachedAllDiseases.map(d => d.country))];
+    const matches = countries.filter(c => c && c.toLowerCase().includes(val));
     rDrop.style.display = 'block';
 
     if (matches.length > 0) {
@@ -243,7 +255,7 @@ async function renderRegionStatus(countryName) {
   if (!box) return;
 
   const diseases = await fetchFilteredMapDataFromServer({});
-  const localThreats = diseases.filter(d => d.country.toLowerCase() === countryName.toLowerCase());
+  const localThreats = diseases.filter(d => d.country && d.country.toLowerCase() === countryName.toLowerCase());
 
   if (localThreats.length > 0) {
     const t = localThreats[0];
