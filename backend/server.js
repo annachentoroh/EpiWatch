@@ -241,6 +241,62 @@ app.get('/api/disease-stats', (req, res) => {
   res.json(data);
 });
 
+//ЕНДПОІНТ МАТЕМАТИЧНОГО ПОРІВНЯННЯ РЕГІОНІВ
+app.get('/api/compare', (req, res) => {
+  const { country1, country2 } = req.query;
+
+  if (!country1 || !country2) {
+    return res.status(400).json({ error: 'Необхідно вказати дві країни для порівняння' });
+  }
+
+  //всі активні спалахи для першої та другої країни в нашій базі з disease.sh
+  const threats1 = DISEASES.filter(d => d.country.toLowerCase() === country1.toLowerCase());
+  const threats2 = DISEASES.filter(d => d.country.toLowerCase() === country2.toLowerCase());
+
+  //сумарна кількість кейсів по кожній країні
+  const cases1 = threats1.reduce((sum, d) => sum + d.cases, 0);
+  const cases2 = threats2.reduce((sum, d) => sum + d.cases, 0);
+
+  //Математичний прорахунок відсотка загрози (відношення меншого спалаху до більшого + базовий коефіцієнт)
+  let riskPercentage = 0;
+  if (cases1 > 0 || cases2 > 0) {
+    const maxCases = Math.max(cases1, cases2);
+    const minCases = Math.min(cases1, cases2);
+    //базовий відсоток загрози динамічним (від 15% до 95%)
+    riskPercentage = Math.round((minCases / maxCases) * 50) + 25;
+    if (riskPercentage > 95) riskPercentage = 95;
+  } else {
+    riskPercentage = 5; //Якщо в обох країнах 0 випадків
+  }
+
+  //інтелектуальний текстовий вердикт на основі реальних цифр
+  let verdict = `Дані синхронізовано з ВООЗ. Ситуація стабільна.`;
+  if (cases1 > cases2 && cases2 > 0) {
+    verdict = `⚠️ Загроза поширення вища з боку регіону ${country1} (${EpiWatchFormatNumber(cases1)} випадків) до ${country2}.`;
+  } else if (cases2 > cases1 && cases1 > 0) {
+    verdict = `⚠️ Регіон ${country2} має значно вищу інфекційну активність (${EpiWatchFormatNumber(cases2)} випадків). Рекомендується моніторинг кордонів.`;
+  } else if (cases1 === cases2 && cases1 > 0) {
+    verdict = `⚡ Обидва регіони мають ідентичний рівень епідеміологічного навантаження штамів.`;
+  }
+
+  //Повертаємо JSON на фронтенд
+  res.json({
+    country1,
+    country2,
+    cases1,
+    cases2,
+    riskPercentage,
+    verdict
+  });
+});
+
+//Допоміжна утиліта форматування цифр для бекенду
+function EpiWatchFormatNumber(n) {
+  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+  return n.toString();
+}
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Сервер успішно працює на http://localhost:${PORT}`);

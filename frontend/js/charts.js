@@ -2,10 +2,11 @@ let mainChart = null;
 let barChartInstance = null;
 let pieChartInstance = null;
 
-//Черга для зберігання останніх пошуків
-let searchHistory = ['hantavirus', 'dengue', 'mpox'];
-let currentDiseaseGlobal = 'hantavirus';
+// Черга для зберігання останніх пошуків (тепер додамо реальний ковід як стартовий)
+let searchHistory = ['covid19_us', 'hantavirus', 'dengue'];
+let currentDiseaseGlobal = 'covid19_us'; // Початкова хвороба за замовчуванням
 let currentPeriodGlobal = 'all';
+let cachedServerDiseases = []; // Сюди завантажимо повну живу базу з сервера
 
 const CHART_COLORS = {
   teal:   '#00c9a7',
@@ -16,14 +17,11 @@ const CHART_COLORS = {
   orange: '#fb923c',
 };
 
-const DISEASE_COLORS = {
-  hantavirus: '#ff4d6d',
-  dengue:     '#ffd166',
-  mpox:       '#c084fc',
-  cholera:    '#fb923c',
-  measles:    '#4dabf7',
-  avian_flu:  '#00c9a7'
-};
+// Функція визначення динамічного кольору для будь-якої хвороби (включаючи ковід)
+function getDiseaseColor(diseaseId, level) {
+  if (diseaseId && diseaseId.startsWith('covid19_')) return CHART_COLORS.teal;
+  return { normal: '#00c9a7', medium: '#ffd166', danger: '#ff4d6d' }[level] || CHART_COLORS.blue;
+}
 
 function chartDefaults() {
   Chart.defaults.color = '#9aa0b4';
@@ -33,15 +31,30 @@ function chartDefaults() {
   Chart.defaults.plugins.legend.labels.padding = 16;
 }
 
-//Асинхронна функція отримання статистики з майбутнього бекенду
+// ПРАВИЛЬНО: Запитуємо історичні тренди напряму з ендпоінту Андрія!
 async function fetchStatsDataFromServer(diseaseId, period) {
-  /* Коли буде API:
   try {
-    const response = await fetch(`/api/stats?disease=${diseaseId}&period=${period}`);
+    const response = await fetch(`/api/stats?disease=${diseaseId}`);
     return await response.json();
-  } catch(e) { console.error("Помилка API", e); }
-  */
-  return EpiWatch.getStatsData();
+  } catch(e) { 
+    console.error("Помилка завантаження статистики з сервера:", e); 
+    return EpiWatch.getStatsData(); // Якщо сервер лежить, підстрахуємося
+  }
+}
+
+// ПРАВИЛЬНО: Допоміжна функція отримання повної бази хвороб для ініціалізації пошуку
+async function fetchAllDiseasesFromServer() {
+  try {
+    const res = await fetch('/api/map-filter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}) // Порожній payload повертає всі 237 записів
+    });
+    return await res.json();
+  } catch (e) {
+    console.error("Не вдалося завантажити хвороби з сервера:", e);
+    return EpiWatch.getDiseases();
+  }
 }
 
 async function buildMainChart(diseaseId, period) {
@@ -49,11 +62,14 @@ async function buildMainChart(diseaseId, period) {
   const ctx = document.getElementById('mainChart');
   if (!ctx) return;
 
-  const selectedData = data[diseaseId] || data.hantavirus;
+  // Шукаємо дані хвороби у прийшовшій з сервера структурі
+  const selectedData = data[diseaseId] || data.hantavirus || [100, 200, 300, 400, 500, 600, 700];
   const labels = getLabels(period, data.labels);
   const values = getPeriodSlice(selectedData, period);
-  const diseaseInfo = EpiWatch.getDiseaseById(diseaseId) || { name: 'Хантавірус' };
-  const color = DISEASE_COLORS[diseaseId] || CHART_COLORS.teal;
+
+  // Визначаємо назву та колір
+  const diseaseInfo = cachedServerDiseases.find(d => d.id === diseaseId) || { name: 'COVID-19 (USA)', level: 'danger' };
+  const color = getDiseaseColor(diseaseId, diseaseInfo.level);
 
   if (mainChart) mainChart.destroy();
 
@@ -106,8 +122,8 @@ function buildBarChart() {
   const ctx = document.getElementById('ageChart');
   if (!ctx) return;
 
-  const allDiseases = EpiWatch.getDiseases();
-  const filtered = allDiseases.filter(d => searchHistory.includes(d.id));
+  // Фільтруємо серверні живі дані на основі масиву історії пошуків користувача
+  const filtered = cachedServerDiseases.filter(d => searchHistory.includes(d.id));
   const sorted = [...filtered].sort((a, b) => b.cases - a.cases);
 
   if (barChartInstance) barChartInstance.destroy();
@@ -119,8 +135,8 @@ function buildBarChart() {
       datasets: [{
         label: 'Випадки',
         data: sorted.map(d => d.cases),
-        backgroundColor: sorted.map(d => EpiWatch.levelColor(d.level) + '99'),
-        borderColor:     sorted.map(d => EpiWatch.levelColor(d.level)),
+        backgroundColor: sorted.map(d => (d.id.startsWith('covid19_') ? CHART_COLORS.teal :  EpiWatch.levelColor(d.level)) + '99'),
+        borderColor:     sorted.map(d => d.id.startsWith('covid19_') ? CHART_COLORS.teal :  EpiWatch.levelColor(d.level)),
         borderWidth: 1.5,
         borderRadius: 6,
       }]
@@ -141,8 +157,7 @@ function buildPieChart() {
   const ctx = document.getElementById('typeChart');
   if (!ctx) return;
 
-  const allDiseases = EpiWatch.getDiseases();
-  const filtered = allDiseases.filter(d => searchHistory.includes(d.id));
+  const filtered = cachedServerDiseases.filter(d => searchHistory.includes(d.id));
 
   if (pieChartInstance) pieChartInstance.destroy();
 
@@ -152,8 +167,8 @@ function buildPieChart() {
       labels: filtered.map(d => d.name),
       datasets: [{
         data: filtered.map(d => d.cases),
-        backgroundColor: filtered.map(d => EpiWatch.levelColor(d.level) + 'cc'),
-        borderColor:     filtered.map(d => EpiWatch.levelColor(d.level)),
+        backgroundColor: filtered.map(d => (d.id.startsWith('covid19_') ? CHART_COLORS.teal : EpiWatch.levelColor(d.level)) + 'cc'),
+        borderColor:     filtered.map(d => d.id.startsWith('covid19_') ? CHART_COLORS.teal : EpiWatch.levelColor(d.level)),
         borderWidth: 1.5,
         hoverOffset: 6,
       }]
@@ -185,7 +200,7 @@ function handleDiseaseSearch(id) {
     if (searchHistory.length > 5) searchHistory.shift();
   }
   
-  const target = EpiWatch.getDiseaseById(id);
+  const target = cachedServerDiseases.find(d => d.id === id);
   if (target) {
     document.getElementById('totalCasesCard').textContent = EpiWatch.formatNumber(target.cases);
     document.getElementById('totalDeathsCard').textContent = EpiWatch.formatNumber(target.deaths);
@@ -197,34 +212,53 @@ function handleDiseaseSearch(id) {
   buildPieChart();
 }
 
-//Покращене порівняння регіонів (з демо-відповіддю)
+//ПОРІВНЯННЯ РЕГІОНІВ
 async function triggerRegionComparisonAPI(c1, c2) {
   const statusBox = document.getElementById('regionComparisonStatus');
   if (!statusBox) return;
   
-  statusBox.innerHTML = `<div class="map-loading__spinner" style="margin:0 auto 10px;"></div> Зіставлення баз даних по регіонах: ${c1} vs ${c2}...`;
+  //анімація завантаження
+  statusBox.innerHTML = `<div class="map-loading__spinner" style="margin:0 auto 10px;"></div> Швидкий аналіз баз даних: ${c1} vs ${c2}...`;
   
-  //Імітуємо затримку відповіді сервера (1.5 секунди)
-  setTimeout(() => {
-    //Демо-розрахунок рівня ризику
-    const randomRisk = Math.floor(Math.random() * 40) + 20; 
+  try {
+    //запит на бекенд з параметрами обраних країн
+    const res = await fetch(`/api/compare?country1=${encodeURIComponent(c1)}&country2=${encodeURIComponent(c2)}`);
+    if (!res.ok) throw new Error("Помилка відповіді сервера");
+    
+    const apiData = await res.json(); // Отримуємо результат від Андрія
+    
+    //віконце з результатом прорахунку сервера
     statusBox.innerHTML = `
       <div style="text-align:center;color:#e8eaf0;">
-        <span class="badge badge--yellow" style="margin-bottom:8px;">Аналітика API готова</span>
-        <p style="font-size:15px;font-weight:600;">Індекс транскордонної загрози (${c1} ↔ ${c2}): <span style="color:#ff4d6d">${randomRisk}%</span></p>
-        <p style="font-size:12px;color:#9aa0b4;margin-top:4px;">Бекенд-інтеграція. Дані синхронізовано з ВООЗ.</p>
+        <span class="badge badge--green" style="margin-bottom:8px;">Реальна аналітика API</span>
+        <p style="font-size:15px;font-weight:600;">Коефіцієнт транскордонного ризику (${c1} ↔ ${c2}): <span style="color:#ff4d6d">${apiData.riskPercentage}%</span></p>
+        <p style="font-size:12px;color:#9aa0b4;margin-top:4px;">${apiData.verdict}</p>
       </div>
     `;
-  }, 1500);
+  } catch(e) { 
+    console.error("Помилка модуля порівняння:", e);
+    statusBox.innerHTML = `<span style="color:#ff4d6d;">❌ Не вдалося прорахувати загрозу. Перевірте з'єднання з бекендом.</span>`;
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   chartDefaults();
+  
+  // КРИТИЧНО: Спочатку викачуємо живі дані з сервера для синхронізації
+  cachedServerDiseases = await fetchAllDiseasesFromServer();
+
+  // Оновлюємо картки сумарної статистики під стартовий ковід
+  const startDisease = cachedServerDiseases.find(d => d.id === currentDiseaseGlobal);
+  if (startDisease) {
+    document.getElementById('totalCasesCard').textContent = EpiWatch.formatNumber(startDisease.cases);
+    document.getElementById('totalDeathsCard').textContent = EpiWatch.formatNumber(startDisease.deaths);
+    document.getElementById('totalRecoveredCard').textContent = EpiWatch.formatNumber(startDisease.recovered);
+  }
+
   buildMainChart(currentDiseaseGlobal, currentPeriodGlobal);
   buildBarChart();
   buildPieChart();
 
-  //Таби часу (7 дн, 30 дн тощо)
   document.querySelectorAll('.time-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
@@ -234,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  //Пошукові підказки для Хвороб з повідомленням про відсутність результатів
+  // Пошукові підказки тепер шукають по повній базі сервера (237+ захворювань!)
   const dInput = document.getElementById('diseaseSearchInput');
   const dDrop = document.getElementById('diseaseSuggestBox');
   
@@ -244,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dDrop.innerHTML = '';
       if (!val) { dDrop.style.display = 'none'; return; }
       
-      const matches = EpiWatch.getDiseases().filter(d => d.name.toLowerCase().includes(val));
+      const matches = cachedServerDiseases.filter(d => d.name.toLowerCase().includes(val));
       dDrop.style.display = 'block';
 
       if (matches.length > 0) {
@@ -260,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
           dDrop.appendChild(item);
         });
       } else {
-        //Якщо нічого не знайдено в базі app.js
         const noResult = document.createElement('div');
         noResult.className = 'search-suggest-item';
         noResult.style.color = '#ff4d6d';
@@ -271,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  //Обробка пошуку для Країни 1 та Країни 2
+  // Обробка пошуку країн на основі повної серверної бази
   ['1', '2'].forEach(num => {
     const input = document.getElementById(`countrySearchInput${num}`);
     const drop = document.getElementById(`countrySuggestBox${num}`);
@@ -282,8 +315,8 @@ document.addEventListener('DOMContentLoaded', () => {
         drop.innerHTML = '';
         if (!val) { drop.style.display = 'none'; return; }
         
-        const countries = [...new Set(EpiWatch.getDiseases().map(d => d.country))];
-        const matches = countries.filter(c => c.toLowerCase().includes(val));
+        const countries = [...new Set(cachedServerDiseases.map(d => d.country))];
+        const matches = countries.filter(c => c && c.toLowerCase().includes(val));
         drop.style.display = 'block';
 
         if (matches.length > 0) {
@@ -313,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  //Закриття підказок при кліку мимо полів
   document.addEventListener('click', (e) => {
     if (dDrop && dInput && !dInput.contains(e.target)) dDrop.style.display = 'none';
     
