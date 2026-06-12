@@ -21,6 +21,7 @@
 <script>
   let detailChartInstance = null;
   let activePeriod = 'all';
+  let currentDiseaseData = null; // Зберігатимемо поточну хворобу з сервера
 
   function getLabelsForPeriod(period, allLabels) {
     const sliceMap = { '30': 2, '90': 4, 'all': 7 };
@@ -32,13 +33,32 @@
     return allData.slice(-(sliceMap[period] || 7));
   }
 
-  // Асинхронний метод отримання статистики по конкретній хворобі під бекенд Андрія
+  //ендпоінт статистики бекенду
   async function fetchDiseaseStatsFromServer(diseaseId) {
-    /* 
-    const res = await fetch(`/api/disease-stats?id=${diseaseId}`);
-    return await res.json();
-    */
-    return EpiWatch.getStatsData();
+    try {
+      const res = await fetch(`/api/disease-stats?id=${diseaseId}`);
+      if (!res.ok) throw new Error("Помилка сервера");
+      return await res.json();
+    } catch(e) {
+      console.error("Помилка завантаження динамічних графіків:", e);
+      return EpiWatch.getStatsData(); // Резервна копія
+    }
+  }
+
+  //Функція отримання картки хвороби безпосередньо з сервера
+  async function fetchSingleDiseaseFromServer(diseaseId) {
+    try {
+      const res = await fetch('/api/map-filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Запитуємо повну базу
+      });
+      const all = await res.json();
+      return all.find(item => item.id === diseaseId);
+    } catch(e) {
+      console.error("Не вдалося отримати картку з сервера:", e);
+      return EpiWatch.getDiseaseById(diseaseId); // Резервний mock-пошук
+    }
   }
 
   async function buildDetailChart(diseaseId, period) {
@@ -51,8 +71,8 @@
     const labels = getLabelsForPeriod(period, stats.labels);
     const dataValues = getDataForPeriod(period, rawData);
     
-    const d = EpiWatch.getDiseaseById(diseaseId);
-    const color = d ? EpiWatch.levelColor(d.level) : '#00c9a7';
+    //Колір лінії графіка залежно від рівня загрози штамму
+    const color = currentDiseaseData ? EpiWatch.levelColor(currentDiseaseData.level) : '#00c9a7';
 
     if (detailChartInstance) detailChartInstance.destroy();
 
@@ -91,8 +111,10 @@
 
   document.addEventListener('DOMContentLoaded', async () => {
     const id = new URLSearchParams(window.location.search).get('id') || 'hantavirus';
-    const d = EpiWatch.getDiseaseById(id);
     const content = document.getElementById('detailContent');
+
+    currentDiseaseData = await fetchSingleDiseaseFromServer(id);
+    const d = currentDiseaseData;
 
     if (!d) {
       content.innerHTML = `<div style="padding:80px;text-align:center;color:#5c6378;">
@@ -102,6 +124,84 @@
 
     document.title = `EpiWatch — ${d.name}`;
     const riskPct = d.cases > 0 ? Math.round((d.deaths / d.cases) * 100) : 0;
+
+    //ДИНАМІЧНІ ШАБЛОНИ ЗА ТИПОМ ХВОРОБИ)
+    const diseaseTemplates = {
+      //Для респіраторних інфекцій (Ковід, Грип тощо)
+      respiratory: {
+        prevention: [
+          'Регулярно мийте руки з милом або використовуйте антисептики.',
+          'Уникайте закритих приміщень із великим скупченням людей.',
+          'Носіть захисну маску в місцях масового перебування людей.',
+          'Провітрюйте приміщення та робіть вологе прибирання.'
+        ],
+        steps: [
+          'Ізолюйтеся в окремій кімнаті, обмежте контакти.',
+          'Терміново зв’яжіться з сімейним лікарем.',
+          'Контролюйте температуру тіла та рівень кисню (сатурацію).',
+          'Пийте багато теплої рідини та не приймайте антибіотики без призначення.'
+        ],
+        sources: [
+          { name: 'Центр громадського здоров’я МОЗ України', url: 'https://phc.org.ua/' },
+          { name: 'World Health Organization (WHO)', url: 'https://www.who.int/' }
+        ]
+      },
+      //Для кишкових/бактеріальних інфекцій (Холера, Сальмонельоз)
+      bacterial_enteric: {
+        prevention: [
+          'Використовуйте лише кип’ячену або бутильовану воду.',
+          'Ретельно мийте овочі та фрукти перед споживанням.',
+          'Уникайте закупівлі продуктів на стихійних ринках.',
+          'Дотримуйтесь термінів термічної обробки м’яса та риби.'
+        ],
+        steps: [
+          'Негайно почніть прийом регідратаційних розчинів для відновлення водно-сольового балансу.',
+          'Викличте швидку допомогу при появі ознак зневоднення.',
+          'Категорично заборонено вживати скріплюючі препарати без лікаря.',
+          'Збережіть зразки їжі, яку вживали напередодні, для аналізу.'
+        ],
+        sources: [
+          { name: 'CDC Waterborne Diseases Safety', url: 'https://www.cdc.gov/' },
+          { name: 'Європейський центр з профілактики захворювань (ECDC)', url: 'https://www.ecdc.europa.eu/' }
+        ]
+      },
+      //Для зоонозних інфекцій (Хантавірус, Сказ, Чума)
+      zoonotic: {
+        prevention: [
+          'Уникайте будь-яких контактів з дикими гризунами та тваринами.',
+          'Зберігайте продукти харчування у щільно закритих контейнерах.',
+          'Проводьте дератизацію та дезінфекцію у підвальних приміщеннях.',
+          'Використовуйте рукавички під час очищення господарських споруд.'
+        ],
+        steps: [
+          'При укусі або контакті негайно промийте рану мильним розчином.',
+          'Невідкладно зверніться до найближчого травмпункту чи інфекціоніста.',
+          'Повідомте лікарю про можливий контакт із гризунами чи дикими тваринами.',
+          'Пройдіть курс екстреної вакцинації або антибіотикотерапії.'
+        ],
+        sources: [
+          { name: 'CDC Zoonotic Disease Hub', url: 'https://www.cdc.gov/onehealth/' },
+          { name: 'МОЗ України — Пам’ятки щодо зоонозів', url: 'https://moz.gov.ua/' }
+        ]
+      }
+    };
+
+    //Автоматично визначаємо групу шаблону на основі даних з API
+    let matchedTemplate = diseaseTemplates.respiratory; // базовий варіант за замовчуванням
+
+    const typeLower = (d.type || '').toLowerCase();
+    const pathogenLower = (d.pathogen || '').toLowerCase();
+
+    if (typeLower.includes('кишков') || typeLower.includes('бактеріал') || pathogenLower.includes('cholera')) {
+      matchedTemplate = diseaseTemplates.bacterial_enteric;
+    } else if (typeLower.includes('зооноз') || pathogenLower.includes('hanta') || pathogenLower.includes('вірус') && id.includes('hanta')) {
+      matchedTemplate = diseaseTemplates.zoonotic;
+    }
+
+    //Якщо в об'єкті 'd' з сервера прийшли готові масиви — беремо їх, якщо ні — беремо підібраний шаблон
+    const preventionList = d.prevention && d.prevention.length ? d.prevention : matchedTemplate.prevention;
+    const stepsList = d.steps && d.steps.length ? d.steps : matchedTemplate.steps;
+    const sourcesList = d.sources && d.sources.length ? d.sources : matchedTemplate.sources;
 
     content.innerHTML = `
       <div style="margin-bottom:20px;font-size:13px;color:#5c6378;" class="anim">
@@ -113,11 +213,11 @@
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:28px;" class="anim anim-1">
         <div>
           <h1 style="font-family:var(--font-display);font-size:34px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;">${d.name}</h1>
-          <div style="font-size:14px;color:#9aa0b4;">${d.origin} · Збудник: <span style="color:#e8eaf0;font-weight:500;">${d.pathogen}</span></div>
+          <div style="font-size:14px;color:#9aa0b4;">${d.origin || '2019, Світ'} · Збудник: <span style="color:#e8eaf0;font-weight:500;">${d.pathogen}</span></div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <span class="badge ${EpiWatch.levelBadgeClass(d.level)}" style="font-size:14px;padding:6px 14px;">
-            <span class="badge__dot"></span>${d.levelLabel}
+            <span class="badge__dot"></span>${d.levelLabel || 'Нормальний'}
           </span>
           <button class="btn btn--primary" onclick="location.href='test.html'">Пройти тест</button>
         </div>
@@ -126,7 +226,7 @@
       <div class="stat-cards anim anim-2">
         <div class="stat-card">
           <div class="stat-card__label">Всього заражених</div>
-          <div class="stat-card__value">${d.cases.toLocaleString('uk-UA')}</div>
+          <div class="stat-card__value" style="color: var(--text);">${d.cases.toLocaleString('uk-UA')}</div>
         </div>
         <div class="stat-card red">
           <div class="stat-card__label">Смертей</div>
@@ -145,11 +245,11 @@
             <div class="info-list">
               <div class="info-row"><label>Тип збудника</label><span>${d.type}</span></div>
               <div class="info-row"><label>Збудник</label><span>${d.pathogen}</span></div>
-              <div class="info-row"><label>Шлях передачі</label><span>${d.transmission}</span></div>
-              <div class="info-row"><label>Регіони поширення</label><span>${d.regions.join(', ')}</span></div>
-              <div class="info-row"><label>Перший спалах</label><span>${d.origin}</span></div>
+              <div class="info-row"><label>Шлях передачі</label><span>${d.transmission || 'Повітряно-крапельний шлях'}</span></div>
+              <div class="info-row"><label>Регіони поширення</label><span>${d.regions ? d.regions.join(', ') : 'Глобально'}</span></div>
+              <div class="info-row"><label>Перший спалах</label><span>${d.origin || '2019, Китай'}</span></div>
               <div class="info-row"><label>Рівень небезпеки ВООЗ</label>
-                <span style="color:${EpiWatch.levelColor(d.level)}">${d.levelLabel}</span>
+                <span style="color:${EpiWatch.levelColor(d.level)}">${d.levelLabel || 'Нормальний'}</span>
               </div>
             </div>
           </div>
@@ -157,7 +257,7 @@
           <div class="card" style="margin-bottom:20px;">
             <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:14px;">Симптоми</h2>
             <div class="symptom-tags">
-              ${d.symptoms.map(s => `<span class="symptom-tag">${s}</span>`).join('')}
+              ${(d.symptoms || ['Лихоманка', 'Кашель']).map(s => `<span class="symptom-tag">${s}</span>`).join('')}
             </div>
           </div>
 
@@ -180,7 +280,7 @@
              Поради для уникнення захворювання
             </h2>
             <ul style="display:flex;flex-direction:column;gap:8px;">
-              ${d.prevention.map(p => `
+              ${preventionList.map(p => `
                 <li style="display:flex;gap:10px;font-size:14px;color:#9aa0b4;">
                   <span style="color:var(--teal);font-weight:700;flex-shrink:0;">✓</span>${p}
                 </li>`).join('')}
@@ -192,17 +292,17 @@
              Що робити при перших симптомах
             </h2>
             <ol style="display:flex;flex-direction:column;gap:8px;counter-reset:steps;">
-              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">1.</span>Ізолюйтеся від інших людей</li>
-              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">2.</span>Зверніться до лікаря або швидкої допомоги</li>
-              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">3.</span>Не займайтеся самолікуванням</li>
-              <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;"><span style="color:var(--yellow);font-weight:700;">4.</span>Повідомте про симптоми МОЗ</li>
+              ${stepsList.map((step, idx) => `
+                <li style="font-size:13px;color:#9aa0b4;display:flex;gap:8px;">
+                  <span style="color:var(--yellow);font-weight:700;">${idx + 1}.</span>${step}
+                </li>`).join('')}
             </ol>
           </div>
 
           <div class="card">
             <h2 style="font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:12px;">Офіційні джерела</h2>
             <div style="display:flex;flex-direction:column;gap:8px;" id="sourceLinksContainer">
-              ${d.sources.map(src => `
+              ${sourcesList.map(src => `
                 <a href="${src.url}" target="_blank" rel="noopener noreferrer" style="color:var(--teal);font-size:13px;display:flex;align-items:center;gap:6px;">
                   ${src.name} ↗
                 </a>`).join('')}
@@ -211,12 +311,9 @@
         </div>
       </div>`;
 
-      
-    //Ініціалізація графіка
     if (typeof Chart !== 'undefined') {
       await buildDetailChart(id, activePeriod);
 
-      //Оживлення табів часу
       document.querySelectorAll('.time-tab').forEach(btn => {
         btn.addEventListener('click', async () => {
           document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
