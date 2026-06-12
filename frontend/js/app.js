@@ -252,8 +252,14 @@ const EpiWatch = (() => {
 
   const FOOTER_HTML = `
   <footer class="footer">
-    <p>© 2025 EpiWatch — Інформаційно-аналітична платформа епідеміологічного моніторингу</p>
-    <p style="margin-top:6px">Дані: <a href="#">WHO Athena API</a> · <a href="#">CDC WONDER</a> · <a href="#">Delphi Epidata</a> &nbsp;|&nbsp; Платформа не замінює臨時 консультацію лікаря</p>
+    <p>© 2026 EpiWatch — Інформаційно-аналітична платформа епідеміологічного моніторингу</p>
+    <p style="margin-top:6px">
+      Дані: 
+      <a href="https://www.who.int/data/gho" target="_blank" rel="noopener noreferrer">WHO Athena API</a> · 
+      <a href="https://wonder.cdc.gov/" target="_blank" rel="noopener noreferrer">CDC WONDER</a> · 
+      <a href="https://delphi.cmu.edu/epidata/" target="_blank" rel="noopener noreferrer">Delphi Epidata</a> 
+      &nbsp;|&nbsp; Платформа не замінює консультацію лікаря
+    </p>
   </footer>`;
 
   function injectShell() {

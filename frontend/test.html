@@ -12,20 +12,18 @@
 <main class="page">
   <div class="container">
 
-    <!-- QUIZ HERO -->
     <div class="quiz-hero anim">
       <h1>ТЕСТ НА <em>ВІРУС</em></h1>
-      <p>Пройдіть тест, щоб визначити по симптомам можливе захворювання.</p>
-      <p class="quiz-disclaimer">⚠ Тест не замінює консультацію у лікаря!</p>
+      <p>Пройдіть інтелектуальний тест, щоб визначити за симптомами можливе захворювання.</p>
+      <p class="quiz-disclaimer">⚠ Тест моделює аналітичну оцінку API і не замінює консультацію у лікаря!</p>
     </div>
 
-    <!-- INTRO CARD (visible before start) -->
     <div id="introCard" class="result-card anim anim-1" style="max-width:640px;">
       <div class="result-icon low">🧬</div>
       <div class="result-title">Як це працює</div>
       <div class="result-desc">
-        Дайте відповіді на 5 запитань про ваш стан, регіон та нещодавні подорожі. 
-        Система порівняє їх з базою 6 захворювань та видасть персоналізований результат.
+        Дайте відповіді на 5 запитань про ваш стан, симптоми та нещодавні подорожі. 
+        Система миттєво порівняє ваші відповіді з глобальною базою даних спалахів ВООЗ та розрахує індивідуальний індекс ризику.
       </div>
       <button class="btn btn--primary" style="margin:0 auto;display:flex;gap:8px;" onclick="startQuiz()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -33,22 +31,20 @@
       </button>
     </div>
 
-    <!-- QUIZ CARD -->
     <div id="quizCard" class="quiz-card anim" style="display:none;">
       <div class="quiz-progress">
         <div class="quiz-progress__bar" id="progressBar" style="width:20%;"></div>
       </div>
 
-      <!-- Step 1 -->
       <div class="quiz-step active" id="step1">
         <div style="color:#5c6378;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Запитання 1 з 5</div>
         <div class="quiz-question">Який у вас регіон проживання?</div>
-        <div class="quiz-hint">Оберіть найближчий регіон</div>
+        <div class="quiz-hint">Оберіть ваш поточний континент</div>
         <div class="quiz-options" id="opts1">
-          <button class="quiz-option" data-q="1" data-v="ukraine" onclick="selectOpt(this)">🇺🇦 Україна</button>
-          <button class="quiz-option" data-q="1" data-v="europe"  onclick="selectOpt(this)">🌍 Європа</button>
-          <button class="quiz-option" data-q="1" data-v="asia"    onclick="selectOpt(this)">🌏 Азія / Африка</button>
-          <button class="quiz-option" data-q="1" data-v="americas" onclick="selectOpt(this)">🌎 Америка</button>
+          <button class="quiz-option" data-q="1" data-v="Україна" onclick="selectOpt(this)">🇺🇦 Україна</button>
+          <button class="quiz-option" data-q="1" data-v="Europe"  onclick="selectOpt(this)">🌍 Європа</button>
+          <button class="quiz-option" data-q="1" data-v="Asia"    onclick="selectOpt(this)">🌏 Азія</button>
+          <button class="quiz-option" data-q="1" data-v="Americas" onclick="selectOpt(this)">🌎 Америка</button>
         </div>
         <div class="quiz-nav">
           <div></div>
@@ -56,16 +52,15 @@
         </div>
       </div>
 
-      <!-- Step 2 -->
       <div class="quiz-step" id="step2">
         <div style="color:#5c6378;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Запитання 2 з 5</div>
-        <div class="quiz-question">Чи є у вас температура?</div>
+        <div class="quiz-question">Чи є у вас лихоманка або підвищена температура?</div>
         <div class="quiz-hint">Оцініть свій стан за останні 2 дні</div>
         <div class="quiz-options">
           <button class="quiz-option" data-q="2" data-v="no"     onclick="selectOpt(this)">Ні, температура нормальна</button>
           <button class="quiz-option" data-q="2" data-v="low"    onclick="selectOpt(this)">Незначна (до 37.5°C)</button>
           <button class="quiz-option" data-q="2" data-v="medium" onclick="selectOpt(this)">Помірна (37.5–39°C)</button>
-          <button class="quiz-option" data-q="2" data-v="high"   onclick="selectOpt(this)">Висока (понад 39°C)</button>
+          <button class="quiz-option" data-q="2" data-v="high"   onclick="selectOpt(this)">Висока лихоманка (понад 39°C)</button>
         </div>
         <div class="quiz-nav">
           <button class="btn btn--ghost" onclick="prevStep(1)">← Назад</button>
@@ -73,17 +68,17 @@
         </div>
       </div>
 
-      <!-- Step 3 -->
       <div class="quiz-step" id="step3">
         <div style="color:#5c6378;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Запитання 3 з 5</div>
-        <div class="quiz-question">Які симптоми вас турбують?</div>
-        <div class="quiz-hint">Можна обрати кілька варіантів</div>
+        <div class="quiz-question">Які додаткові симптоми вас турбують?</div>
+        <div class="quiz-hint">Можна обрати КІЛЬКА варіантів кліком</div>
         <div class="quiz-options" id="multiOpts">
-          <button class="quiz-option" data-q="3" data-v="cough"     onclick="toggleMulti(this)">😮‍💨 Кашель / задишка</button>
-          <button class="quiz-option" data-q="3" data-v="rash"      onclick="toggleMulti(this)">🔴 Висипка на шкірі</button>
-          <button class="quiz-option" data-q="3" data-v="diarrhea"  onclick="toggleMulti(this)">🤒 Нудота / діарея</button>
-          <button class="quiz-option" data-q="3" data-v="pain"      onclick="toggleMulti(this)">💢 Сильний біль у м'язах</button>
-          <button class="quiz-option" data-q="3" data-v="none"      onclick="selectOpt(this)">Немає суттєвих симптомів</button>
+          <button class="quiz-option" data-v="Кашель" onclick="toggleMulti(this)">😮‍чам Кашель / Задишка</button>
+          <button class="quiz-option" data-v="Висипка" onclick="toggleMulti(this)">🔴 Висипка на шкірі / Виразки</button>
+          <button class="quiz-option" data-v="Діарея" onclick="toggleMulti(this)">🤢 Сильна діарея / Блювання</button>
+          <button class="quiz-option" data-v="М'язовий біль" onclick="toggleMulti(this)">💢 Біль у суглобах чи м'язах</button>
+          <button class="quiz-option" data-v="Втрата смаку/нюху" onclick="toggleMulti(this)">👃 Втрата смаку чи нюху</button>
+          <button class="quiz-option" data-v="Втома" onclick="toggleMulti(this)">💤 Загальна слабкість та втома</button>
         </div>
         <div class="quiz-nav">
           <button class="btn btn--ghost" onclick="prevStep(2)">← Назад</button>
@@ -91,16 +86,15 @@
         </div>
       </div>
 
-      <!-- Step 4 -->
       <div class="quiz-step" id="step4">
         <div style="color:#5c6378;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Запитання 4 з 5</div>
-        <div class="quiz-question">Чи подорожували ви за кордон нещодавно?</div>
-        <div class="quiz-hint">За останні 30 днів</div>
+        <div class="quiz-question">Чи подорожували ви за кордон за останні 30 днів?</div>
+        <div class="quiz-hint">Оберіть зону візиту</div>
         <div class="quiz-options">
           <button class="quiz-option" data-q="4" data-v="no"       onclick="selectOpt(this)">Ні, не виїжджав(-ла)</button>
-          <button class="quiz-option" data-q="4" data-v="europe"   onclick="selectOpt(this)">Так, країни Європи</button>
-          <button class="quiz-option" data-q="4" data-v="asia"     onclick="selectOpt(this)">Так, Азія або Африка</button>
-          <button class="quiz-option" data-q="4" data-v="americas" onclick="selectOpt(this)">Так, Америка</button>
+          <button class="quiz-option" data-q="4" data-v="Europe"   onclick="selectOpt(this)">Так, країни Європи</button>
+          <button class="quiz-option" data-q="4" data-v="Asia"     onclick="selectOpt(this)">Так, країни Азії</button>
+          <button class="quiz-option" data-q="4" data-v="Africa"   onclick="selectOpt(this)">Так, країни Африки</button>
         </div>
         <div class="quiz-nav">
           <button class="btn btn--ghost" onclick="prevStep(3)">← Назад</button>
@@ -108,16 +102,15 @@
         </div>
       </div>
 
-      <!-- Step 5 -->
       <div class="quiz-step" id="step5">
         <div style="color:#5c6378;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Запитання 5 з 5</div>
-        <div class="quiz-question">Чи контактували ви з тваринами або гризунами?</div>
-        <div class="quiz-hint">В побуті, на природі або на фермі</div>
+        <div class="quiz-question">Чи контактували ви з джерелами потенційного біо-ризику?</div>
+        <div class="quiz-hint">В побуті, під час мандрівок чи на виробництві</div>
         <div class="quiz-options">
-          <button class="quiz-option" data-q="5" data-v="no"       onclick="selectOpt(this)">Ні</button>
-          <button class="quiz-option" data-q="5" data-v="birds"    onclick="selectOpt(this)">Так, птиця (домашня або дика)</button>
-          <button class="quiz-option" data-q="5" data-v="rodents"  onclick="selectOpt(this)">Так, гризуни</button>
-          <button class="quiz-option" data-q="5" data-v="primates" onclick="selectOpt(this)">Так, примати або екзотичні тварини</button>
+          <button class="quiz-option" data-q="5" data-v="no"       onclick="selectOpt(this)">Ні, специфічних контактів не було</button>
+          <button class="quiz-option" data-q="5" data-v="birds"    onclick="selectOpt(this)">Так, дика чи домашня птиця</button>
+          <button class="quiz-option" data-q="5" data-v="rodents"  onclick="selectOpt(this)">Так, гризуни або їхні виділення</button>
+          <button class="quiz-option" data-q="5" data-v="crowds"   onclick="selectOpt(this)">Так, перебував у закритих натовпах або лікарнях</button>
         </div>
         <div class="quiz-nav">
           <button class="btn btn--ghost" onclick="prevStep(4)">← Назад</button>
@@ -126,7 +119,6 @@
       </div>
     </div>
 
-    <!-- RESULT CARD -->
     <div id="resultCard" style="display:none;" class="anim">
       <div id="resultContent"></div>
     </div>
@@ -137,10 +129,28 @@
 <div id="footer-placeholder"></div>
 <script src="js/app.js"></script>
 <script>
-  const answers = {};
+  const answers = { 3: [] }; // Ініціалізуємо масив під мульти-симптоми
   let currentStep = 1;
+  let serverDiseasesCache = [];
 
-  function startQuiz() {
+  // Асинхронний запит до бекенду для отримання повної свіжої бази епідемій
+  async function fetchAllDiseasesForQuiz() {
+    try {
+      const res = await fetch('/api/map-filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Беремо повний стек
+      });
+      return await res.json();
+    } catch (e) {
+      console.error("Помилка зв'язку з базою при старті квізу:", e);
+      return EpiWatch.getDiseases(); // Фолбек
+    }
+  }
+
+  async function startQuiz() {
+    // Викачуємо базу перед стартом
+    serverDiseasesCache = await fetchAllDiseasesForQuiz();
     document.getElementById('introCard').style.display = 'none';
     document.getElementById('quizCard').style.display  = 'block';
   }
@@ -156,9 +166,8 @@
 
   function toggleMulti(btn) {
     btn.classList.toggle('selected');
-    //collect selected
-    const vals = [...document.querySelectorAll('#multiOpts .quiz-option.selected')].map(b=>b.dataset.v);
-    answers[3] = vals;
+    const selectedNodes = document.querySelectorAll('#multiOpts .quiz-option.selected');
+    answers[3] = [...selectedNodes].map(b => b.dataset.v);
   }
 
   function nextStep(n) {
@@ -167,6 +176,7 @@
     currentStep = n;
     document.getElementById('progressBar').style.width = (n * 20) + '%';
   }
+  
   function prevStep(n) {
     document.getElementById('step' + currentStep).classList.remove('active');
     document.getElementById('step' + n).classList.add('active');
@@ -178,78 +188,128 @@
     document.getElementById('quizCard').style.display = 'none';
     document.getElementById('resultCard').style.display = 'block';
 
-    //Simple scoring algorithm
-    let risk = 'low';
-    let riskLabel = 'Низький';
-    let riskColor = 'teal';
-    let possibleDiseases = [];
-    let recommendations = [
-      'Слідкуйте за своїм самопочуттям протягом тижня',
-      'Дотримуйтесь загальних правил гігієни',
-      'Миття рук — найпроста і найефективніша профілактика',
-    ];
-
-    const symptoms = Array.isArray(answers[3]) ? answers[3] : [answers[3]];
-    const temp = answers[2];
-    const travel = answers[4];
-    const animals = answers[5];
-
-    if (temp === 'high' || symptoms.includes('rash') || animals === 'rodents') {
-      risk = 'high'; riskLabel = 'Підвищений'; riskColor = 'high';
-      recommendations = [
-        'Негайно зверніться до лікаря або викличте швидку допомогу',
-        'Ізолюйтеся від інших членів сім\'ї',
-        'Не вживайте жодних ліків без призначення лікаря',
-        'Повідомте лікаря про всі нещодавні контакти з тваринами',
-      ];
-    } else if (temp === 'medium' || symptoms.includes('cough') || travel !== 'no') {
-      risk = 'medium'; riskLabel = 'Помірний'; riskColor = 'medium';
-      recommendations = [
-        'Зверніться до сімейного лікаря для консультації',
-        'Уникайте контакту з людьми похилого віку та дітьми',
-        'Носіть маску в громадських місцях',
-        'Пийте більше води та відпочивайте',
-      ];
+    // Збираємо профіль симптомів користувача
+    const userSymptoms = [...answers[3]];
+    if (answers[2] !== 'no') {
+      userSymptoms.push('Лихоманка');
+      userSymptoms.push('Висока температура');
     }
 
-    //Match diseases
-    const all = EpiWatch.getDiseases();
-    if (animals === 'rodents') possibleDiseases.push(all.find(d=>d.id==='hantavirus'));
-    if (animals === 'birds')   possibleDiseases.push(all.find(d=>d.id==='avian_flu'));
-    if (symptoms.includes('rash') && animals === 'primates') possibleDiseases.push(all.find(d=>d.id==='mpox'));
-    if (travel === 'asia' && temp !== 'no') possibleDiseases.push(all.find(d=>d.id==='dengue'));
-    if (answers[1]==='ukraine') possibleDiseases.push(all.find(d=>d.id==='measles'));
-    possibleDiseases = [...new Set(possibleDiseases.filter(Boolean))].slice(0,3);
+    const travelZone = answers[4];
+    const contactRisk = answers[5];
 
-    const emoji = { low:'✅', medium:'⚠️', high:'🚨' }[risk];
+    // --- РОЗУМНИЙ АЛГОРИТМ МАТЕМАТИЧНОГО ЗБІГУ (SCORE MATCHING) ---
+    let diseaseScores = [];
+
+    serverDiseasesCache.forEach(d => {
+      let score = 0;
+      let totalMaxPossible = 0;
+
+      // 1. Аналіз симптомів (вага 60% загального індексу)
+      if (d.symptoms && d.symptoms.length > 0) {
+        d.symptoms.forEach(s => {
+          totalMaxPossible += 10;
+          // Перевіряємо частковий або повний текстовий збіг
+          const hasMatch = userSymptoms.some(us => s.toLowerCase().includes(us.toLowerCase()) || us.toLowerCase().includes(s.toLowerCase()));
+          if (hasMatch) score += 10;
+        });
+      }
+
+      // 2. Фактор географії/подорожей (вага 20%)
+      totalMaxPossible += 5;
+      if (travelZone !== 'no' && d.regions) {
+        const zoneMatch = d.regions.some(r => r.toLowerCase().includes(travelZone.toLowerCase()));
+        if (zoneMatch) score += 5;
+      }
+
+      // 3. Фактор прямого біо-контакту (вага 20%)
+      totalMaxPossible += 5;
+      if (contactRisk === 'rodents' && (d.pathogen.toLowerCase().includes('hanta') || d.transmission.toLowerCase().includes('гризун'))) {
+        score += 5;
+      } else if (contactRisk === 'birds' && (d.id.includes('avian') || d.transmission.toLowerCase().includes('птиц'))) {
+        score += 5;
+      } else if (contactRisk === 'crowds' && d.transmission.toLowerCase().includes('повітряно')) {
+        score += 3; // Підвищений ризик для респіраторних штамів
+      }
+
+      // Розраховуємо фінальний відсоток збігу для цієї хвороби
+      const percentage = totalMaxPossible > 0 ? Math.round((score / totalMaxPossible) * 100) : 0;
+      
+      if (percentage > 10) {
+        diseaseScores.push({ disease: d, matchScore: percentage });
+      }
+    });
+
+    // Сортуємо результати за спаданням відсотка збігу
+    diseaseScores.sort((a, b) => b.matchScore - a.matchScore);
+    const topMatches = diseaseScores.slice(0, 3); // Виводимо ТОП-3 найімовірніших загрози
+
+    // Визначаємо загальний інтегральний рівень ризику для картки вердикту
+    let finalRisk = 'low';
+    let riskLabel = 'Низький';
+    let riskColor = 'teal';
+    let emoji = '✅';
+    let recommendations = [
+      'Слідкуйте за своїм самопочуттям протягом тижня.',
+      'Дотримуйтесь стандартних правил особистої гігієни та миття рук.',
+      'Індекс симптомів у нормі, проте при погіршенні стану зверніться до спеціаліста.'
+    ];
+
+    const maxTopScore = topMatches.length > 0 ? topMatches[0].matchScore : 0;
+
+    if (maxTopScore >= 55 || answers[2] === 'high') {
+      finalRisk = 'high'; riskLabel = 'Високий / Терміновий'; riskColor = 'high'; emoji = '🚨';
+      recommendations = [
+        'Негайно ізолюйтеся в окремому приміщенні та обмежте контакти.',
+        'Зателефонуйте до служби швидкої допомоги (103) або сімейного лікаря.',
+        'Повідомте медикам точний перелік симптомів та історію ваших подорожей.',
+        'Не приймайте ліки (особливо антибіотики чи аспірин) до консультації з лікарем.'
+      ];
+    } else if (maxTopScore >= 25 || answers[2] === 'medium' || travelZone !== 'no') {
+      finalRisk = 'medium'; riskLabel = 'Помірний ризик'; riskColor = 'medium'; emoji = '⚠️';
+      recommendations = [
+        'Зв’яжіться з вашим сімейним лікарем у телефонному режимі.',
+        'Уникайте місць скупчення людей та носіть захисну маску класу FFP2.',
+        'Пийте більше теплої рідини для зменшення загальної інтоксикації.',
+        'Обмежте контакти з дітьми та літніми людьми.'
+      ];
+    }
 
     document.getElementById('resultContent').innerHTML = `
       <div class="result-card">
         <div class="result-icon ${riskColor}" style="font-size:36px;">${emoji}</div>
-        <div class="result-title">Рівень ризику: ${riskLabel}</div>
+        <div class="result-title">Рівень загрози: ${riskLabel}</div>
         <div class="result-desc">
-          На основі ваших відповідей система оцінила ваш ризик як <strong style="color:var(--${riskColor==='teal'?'teal':riskColor==='medium'?'yellow':'red'})">${riskLabel}</strong>. 
-          Пам'ятайте — це попередня оцінка, яка не замінює медичну консультацію.
+          Розумна експертна система EpiWatch проаналізувала ваш профіль. Ризик оцінено як <strong style="color:var(--${riskColor==='teal'?'teal':riskColor==='medium'?'yellow':'red'})">${riskLabel}</strong>. 
         </div>
 
-        ${possibleDiseases.length ? `
-        <div style="text-align:left;margin-bottom:20px;">
-          <div style="font-size:13px;font-weight:600;color:#9aa0b4;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;">
-            Можливі захворювання за вашими симптомами:
+        ${topMatches.length ? `
+        <div style="text-align:left; margin-bottom:24px; background: rgba(255,255,255,0.02); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+          <div style="font-size:12px; font-weight:600; color:#9aa0b4; margin-bottom:12px; text-transform:uppercase; letter-spacing:.5px;">
+            🚨 Виявлені збіги з епідеміологічною базою спалахів:
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            ${possibleDiseases.map(d=>`
-              <a href="disease-detail.html?id=${d.id}" class="badge ${EpiWatch.levelBadgeClass(d.level)}" style="font-size:13px;padding:6px 14px;text-decoration:none;">
-                ${d.name} →
-              </a>`).join('')}
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            ${topMatches.map(m => `
+              <div style="display:flex; align-items:center; justify-content:space-between; font-size:14px; background: var(--bg); padding: 8px 12px; border-radius: 6px;">
+                <a href="disease-detail.html?id=${m.disease.id}" style="color:var(--text); font-weight:500; text-decoration:underline;">
+                  ${m.disease.name}
+                </a>
+                <span class="badge ${EpiWatch.levelBadgeClass(m.disease.level)}" style="font-weight:700;">
+                  ${m.matchScore}% збігу
+                </span>
+              </div>
+            `).join('')}
           </div>
-        </div>` : ''}
+        </div>` : `
+        <div style="text-align:center; margin-bottom:20px; color: var(--teal); font-size:13px; font-weight:500;">
+          🎉 Ваші симптоми не збігаються з жодним активним спалахом небезпечних штамів у базі!
+        </div>`}
 
         <ul class="result-list" style="margin-bottom:28px;">
-          ${recommendations.map(r=>`<li>${r}</li>`).join('')}
+          ${recommendations.map(r => `<li>${r}</li>`).join('')}
         </ul>
 
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
           <button class="btn btn--ghost" onclick="restartQuiz()">Пройти ще раз</button>
           <a href="education.html" class="btn btn--primary">Освітній блок →</a>
         </div>
@@ -257,7 +317,8 @@
   }
 
   function restartQuiz() {
-    Object.keys(answers).forEach(k => delete answers[k]);
+    answers[3] = [];
+    Object.keys(answers).forEach(k => { if(k !== '3') delete answers[k]; });
     document.querySelectorAll('.quiz-option').forEach(b => b.classList.remove('selected'));
     document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
     document.getElementById('step1').classList.add('active');
@@ -268,5 +329,3 @@
     document.getElementById('quizCard').style.display = 'block';
   }
 </script>
-</body>
-</html>
