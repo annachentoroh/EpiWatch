@@ -8,7 +8,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 const DATA_FILE = path.join(__dirname, 'data.json');
 
-// базові (статичні) захворювання для забезпечення сумісності та різноманітності спалахів
+//Cтатичні захворювання для забезпечення сумісності та різноманітності спалахів
 const STATIC_DISEASES = [
   {
     id: 'hantavirus', name: 'Хантавірус', origin: '1993, США', type: 'Вірус', pathogen: 'Hantavirus',
@@ -79,7 +79,7 @@ const STATIC_DISEASES = [
   }
 ];
 
-//ФУНКЦІЯ ДИНАМІЧНОЇ ГЕНЕРАЦІЇ 7 ОСТАННІХ МІСЯЦІВ
+//Динамічна генерація останніх 7 місяців
 function generateLiveMonthLabels() {
   const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
   const currentMonthIdx = new Date().getMonth(); 
@@ -93,7 +93,7 @@ function generateLiveMonthLabels() {
   return labels;
 }
 
-//Оновлюємо історичну базу для графіків, щоб вона автоматично підлаштовувалася
+//Оновлена історична базу для графіків, щоб вона автоматично підлаштовувалася
 const BASE_STATS_DATA = {
   labels: generateLiveMonthLabels(), 
   hantavirus: [120, 145, 189, 212, 280, 340, 380],
@@ -104,10 +104,10 @@ const BASE_STATS_DATA = {
   avian_flu:  [50, 95, 130, 210, 290, 380, 430]
 };
 
-// кеш у пам'яті
+//Кеш у памʼяті
 let DISEASES = [...STATIC_DISEASES];
 
-// функція для завантаження кешу з диска під час старту
+//Функція для завантаження кешу з диска під час старту
 function loadCacheFromDisk() {
   if (fs.existsSync(DATA_FILE)) {
     try {
@@ -121,7 +121,7 @@ function loadCacheFromDisk() {
   }
 }
 
-// функція отримання живих даних по ВСІХ країнах світу з Disease.sh
+//Функція отримання живих даних по ВСІХ країнах світу з Disease.sh
 async function fetchRealData() {
   try {
     console.log('Запит свіжої статистики з disease.sh...');
@@ -130,9 +130,9 @@ async function fetchRealData() {
     
     const data = await response.json();
 
-    // Перетворюємо світові дані COVID-19 під формат нашого додатку
+    //Перетворюємо світові дані COVID-19 під формат додатку
     const covidDiseases = data.map(countryData => {
-      // Визначаємо рівень небезпеки на основі кількості активних випадків
+      //Визначаємо рівень небезпеки на основі кількості активних випадків
       let level = 'normal';
       let levelLabel = 'Нормальний';
       if (countryData.active > 80000) {
@@ -169,32 +169,32 @@ async function fetchRealData() {
       };
     });
 
-    // Об'єднуємо наші статичні хвороби з новими світовими даними COVID-19
+    //Об'єднуємо статичні хвороби з новими світовими даними COVID-19
     DISEASES = [...STATIC_DISEASES, ...covidDiseases];
 
-    // Зберігаємо оновлений масив у файл data.json для стійкості
+    //Зберігаємо оновлений масив у файл data.json для стійкості
     fs.writeFileSync(DATA_FILE, JSON.stringify(DISEASES, null, 2));
     console.log(`Дані успішно оновлено! Всього записів у базі: ${DISEASES.length}`);
 
   } catch (error) {
     console.error('Не вдалося оновити дані з API:', error.message);
-    // Якщо API лежить, а кеш пустий, пробуємо ініціалізувати хоча б диск
+    //Якщо API лежить, а кеш пустий, пробуємо ініціалізувати хоча б диск
     if (DISEASES.length <= STATIC_DISEASES.length) {
       loadCacheFromDisk();
     }
   }
 }
 
-// Завантажуємо локальний кеш перед запуском асинхронного API
+//Завантажуємо локальний кеш перед запуском асинхронного API
 loadCacheFromDisk();
 fetchRealData();
 
-// Оновлення кожні 4 години (14400000 мс)
+//Оновлення кожні 4 години (14400000 мс)
 setInterval(fetchRealData, 14400000);
 
 // --- API ЕНДПОІНТИ ---
 
-// 1. Ендпоінт фільтрації карти
+//1. Ендпоінт фільтрації карти
 app.post('/api/map-filter', (req, res) => {
   const { country, pathType, pathogen, symptom, view } = req.body;
   let filtered = [...DISEASES];
@@ -218,7 +218,7 @@ app.post('/api/map-filter', (req, res) => {
   res.json(filtered);
 });
 
-// НАДІЙНИЙ АЛГОРИТМ ЕПІДЕМІОЛОГІЧНИХ ХВИЛЬ ТА ЧАСОВИХ ПЕРІОДІВ (ФІНАЛЬНИЙ)
+//НАДІЙНИЙ АЛГОРИТМ ЕПІДЕМІОЛОГІЧНИХ ХВИЛЬ ТА ЧАСОВИХ ПЕРІОДІВ 
 function generateDynamicStats(diseaseId, period = 'all') {
   const currentMonthIdx = new Date().getMonth();
   const currentYear = new Date().getFullYear(); // 2026
@@ -226,9 +226,9 @@ function generateDynamicStats(diseaseId, period = 'all') {
   let labels = [];
   const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
 
-  // Ініціалізуємо правильні мітки часу залежно від обраного табу
+  //Ініціалізуємо правильні мітки часу залежно від обраного табу
   if (period === '7') {
-    // Для 7 днів генеруємо останні 7 днів (наприклад, 06.06, 07.06...)
+    //Для 7 днів генеруємо останні 7 днів (наприклад, 06.06, 07.06...)
     const today = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -236,17 +236,17 @@ function generateDynamicStats(diseaseId, period = 'all') {
       labels.push(d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' }));
     }
   } else if (period === '30') {
-    // Для 30 днів генеруємо зріз по 4 останніх тижнях
+    //Для 30 днів генеруємо зріз по 4 останніх тижнях
     labels = ['4 тижні тому', '3 тижні тому', '2 тижні тому', 'Поточний тиждень'];
   } else if (period === '365') {
-    // Для року генеруємо повні 12 місяців назад
+    //Для року генеруємо повні 12 місяців назад
     for (let i = 11; i >= 0; i--) {
       let idx = currentMonthIdx - i;
       if (idx < 0) idx += 12;
       labels.push(monthsArr[idx]);
     }
   } else if (period === 'all') {
-    // Для всього часу генеруємо зріз по роках
+    //Для всього часу генеруємо зріз по роках
     labels = [
       (currentYear - 4).toString(), // 2022
       (currentYear - 3).toString(), // 2023
@@ -255,8 +255,8 @@ function generateDynamicStats(diseaseId, period = 'all') {
       'Поточ. рік'                  // 2026
     ];
   } else {
-    // Для 3 міс залишаємо стандартні останні 7 місяців
-    for (let i = 6; i >= 0; i--) {
+    //Для 3 міс 
+    for (let i = 2; i >= 0; i--) {
       let idx = currentMonthIdx - i;
       if (idx < 0) idx += 12;
       labels.push(monthsArr[idx]);
@@ -267,7 +267,7 @@ function generateDynamicStats(diseaseId, period = 'all') {
   const match = DISEASES.find(d => d.id === diseaseId);
   const baseValue = match ? match.cases : 5000;
   
-  // Короткі періоди повинні відображати значно меншу кількість НОВИХ випадків, ніж рік чи роки!
+  //Короткі періоди повинні відображати значно меншу кількість НОВИХ випадків, ніж рік чи роки!
   let timeFactor = 1;
   if (period === '7') timeFactor = 0.02;      // 2% від загального обсягу спалаху на день
   else if (period === '30') timeFactor = 0.08; // 8% на тиждень
@@ -289,7 +289,7 @@ function generateDynamicStats(diseaseId, period = 'all') {
   return { labels, values };
 }
 
-// --- СИНХРОНІЗОВАНІ ЧИСТІ ЕНДПОІНТИ (БЕЗ ДУБЛІКАТІВ) ---
+// ендпоінти без дублікатів
 app.get('/api/stats', (req, res) => {
   const { disease, period } = req.query;
   const data = generateDynamicStats(disease, period);
@@ -302,7 +302,7 @@ app.get('/api/disease-stats', (req, res) => {
   res.json(data);
 });
 
-// ЕНДПОІНТ МАТЕМАТИЧНОГО ПОРІВНЯННЯ РЕГІОНІВ
+// ендпоінт математичного порівняння регіонів
 app.get('/api/compare', (req, res) => {
   const { country1, country2 } = req.query;
 

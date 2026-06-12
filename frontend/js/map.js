@@ -210,7 +210,7 @@ function setupRegionCustomSearch() {
   if (!rInput || !rDrop || !box) return;
 
   setTimeout(() => {
-    renderRegionStatus('Україна');
+    renderRegionStatus('Ukraine');
   }, 1000);
 
   rInput.addEventListener('input', () => {

@@ -34,14 +34,16 @@
   }
 
   //ендпоінт статистики бекенду
-  async function fetchDiseaseStatsFromServer(diseaseId) {
+  async function fetchDiseaseStatsFromServer(diseaseId, period) {
     try {
-      const res = await fetch(`/api/disease-stats?id=${diseaseId}`);
+      const res = await fetch(`/api/disease-stats?id=${diseaseId}&period=${period}`);
       if (!res.ok) throw new Error("Помилка сервера");
-      return await res.json();
+      return await res.json(); // Отримаємо об'єкт { labels: [...], values: [...] }
     } catch(e) {
       console.error("Помилка завантаження динамічних графіків:", e);
-      return EpiWatch.getStatsData(); // Резервна копія
+      const dummyLabels = period === '30' ? ['4 тижні тому', '3 тижні тому', '2 тижні тому', 'Поточний тиждень'] : ['2023', '2024', '2025', '2026'];
+      const dummyValues = period === '30' ? [120, 280, 190, 450] : [1200, 4500, 2300, 6800];
+      return { labels: dummyLabels, values: dummyValues };
     }
   }
 
@@ -65,13 +67,13 @@
     const canvas = document.getElementById('detailChartCanvas');
     if (!canvas) return;
 
-    const stats = await fetchDiseaseStatsFromServer(diseaseId);
-    const rawData = stats[diseaseId] || stats.hantavirus;
+    // Передаємо два параметри на бекенд
+    const stats = await fetchDiseaseStatsFromServer(diseaseId, period);
     
-    const labels = getLabelsForPeriod(period, stats.labels);
-    const dataValues = getDataForPeriod(period, rawData);
+    // ПРАВИЛЬНО: Сервер тепер повертає прямі готові масиви, обрізалки більше не потрібні!
+    const labels = stats.labels;
+    const dataValues = stats.values;
     
-    //Колір лінії графіка залежно від рівня загрози штамму
     const color = currentDiseaseData ? EpiWatch.levelColor(currentDiseaseData.level) : '#00c9a7';
 
     if (detailChartInstance) detailChartInstance.destroy();
