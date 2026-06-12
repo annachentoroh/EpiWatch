@@ -35,11 +35,14 @@ function chartDefaults() {
 // ПРАВИЛЬНО: Запитуємо історичні тренди напряму з ендпоінту Андрія!
 async function fetchStatsDataFromServer(diseaseId, period) {
   try {
-    const response = await fetch(`/api/stats?disease=${diseaseId}`);
+    const response = await fetch(`/api/stats?disease=${diseaseId}&period=${period}`);
     return await response.json();
   } catch(e) { 
     console.error("Помилка завантаження статистики з сервера:", e); 
-    return EpiWatch.getStatsData(); // Якщо сервер лежить, підстрахуємося
+    // Динамічний локальний фолбек, якщо бекенд недоступний
+    const dummyLabels = period === '365' ? ['Січ','Лют','Бер','Кві','Трав','Чер','Лип','Сер','Вер','Жов','Лис','Гру'] : ['2023','2024','2025','2026'];
+    const dummyValues = period === '365' ? [10,40,15,80,25,90,30,45,12,70,85,30] : [200, 800, 400, 1200];
+    return { labels: dummyLabels, values: dummyValues };
   }
 }
 
@@ -59,16 +62,15 @@ async function fetchAllDiseasesFromServer() {
 }
 
 async function buildMainChart(diseaseId, period) {
+  // Шлемо запит із урахуванням обраного періоду часу
   const data = await fetchStatsDataFromServer(diseaseId, period);
   const ctx = document.getElementById('mainChart');
   if (!ctx) return;
 
-  // Шукаємо дані хвороби у прийшовшій з сервера структурі
-  const selectedData = data[diseaseId] || data.hantavirus || [100, 200, 300, 400, 500, 600, 700];
-  const labels = getLabels(period, data.labels);
-  const values = getPeriodSlice(selectedData, period);
+  // Сервер тепер повертає ідеально чисті масиви під конкретний таб!
+  const labels = data.labels;
+  const values = data.values;
 
-  // Визначаємо назву та колір
   const diseaseInfo = cachedServerDiseases.find(d => d.id === diseaseId) || { name: 'COVID-19 (USA)', level: 'danger' };
   const color = getDiseaseColor(diseaseId, diseaseInfo.level);
 
@@ -107,7 +109,7 @@ async function buildMainChart(diseaseId, period) {
           titleColor: '#e8eaf0',
           bodyColor: '#9aa0b4',
           callbacks: {
-            label: ctx => ` ${ctx.parsed.y.toLocaleString('uk-UA')} випадків`,
+            label: ctx => ` ${ctx.parsed.y.toLocaleString('uk-UA')} нових випадків`,
           }
         }
       },
@@ -185,14 +187,9 @@ function buildPieChart() {
   });
 }
 
-function getLabels(period, all) {
-  const n = { '7': 2, '30': 3, '90': 5, '365': 7, 'all': 7 }[period] || 7;
-  return all.slice(-n);
-}
-function getPeriodSlice(data, period) {
-  const n = { '7': 2, '30': 3, '90': 5, '365': 7, 'all': 7 }[period] || 7;
-  return data.slice(-n);
-}
+//ДИНАМІЧНЕ ФОРМУВАННЯ МІТОК ЧАСУ НА ФРОНТЕНДІ
+function getLabels(period, all) { return all; }
+function getPeriodSlice(data, period) { return data; }
 
 function handleDiseaseSearch(id) {
   currentDiseaseGlobal = id;

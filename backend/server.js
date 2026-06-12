@@ -79,9 +79,23 @@ const STATIC_DISEASES = [
   }
 ];
 
-// історична база для графіків (базова)
+//ФУНКЦІЯ ДИНАМІЧНОЇ ГЕНЕРАЦІЇ 7 ОСТАННІХ МІСЯЦІВ
+function generateLiveMonthLabels() {
+  const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+  const currentMonthIdx = new Date().getMonth(); 
+  
+  let labels = [];
+  for (let i = 6; i >= 0; i--) {
+    let idx = currentMonthIdx - i;
+    if (idx < 0) idx += 12; 
+    labels.push(monthsArr[idx]);
+  }
+  return labels;
+}
+
+//Оновлюємо історичну базу для графіків, щоб вона автоматично підлаштовувалася
 const BASE_STATS_DATA = {
-  labels: ['Жов', 'Лис', 'Гру', 'Січ', 'Лют', 'Бер', 'Кві'],
+  labels: generateLiveMonthLabels(), 
   hantavirus: [120, 145, 189, 212, 280, 340, 380],
   dengue:     [3200, 4100, 5600, 8200, 9800, 11200, 12400],
   mpox:       [880, 920, 1100, 1450, 1800, 2100, 2400],
@@ -204,44 +218,91 @@ app.post('/api/map-filter', (req, res) => {
   res.json(filtered);
 });
 
-// Допоміжна функція динамічної генерації реалістичного тренду для будь-якої хвороби з бази
-function generateDynamicStats(diseaseId) {
-  let stats = { ...BASE_STATS_DATA };
-  
-  // Якщо запитаної хвороби немає у базовому списку графіків (наприклад, динамічний COVID країни)
-  if (diseaseId && !stats[diseaseId]) {
-    const match = DISEASES.find(d => d.id === diseaseId);
-    const maxVal = match ? match.cases : 5000;
-    
-    // Створюємо красиву висхідну криву на основі загальної кількості кейсів
-    stats[diseaseId] = [
-      Math.round(maxVal * 0.45),
-      Math.round(maxVal * 0.58),
-      Math.round(maxVal * 0.68),
-      Math.round(maxVal * 0.77),
-      Math.round(maxVal * 0.86),
-      Math.round(maxVal * 0.94),
-      maxVal
+// НАДІЙНИЙ АЛГОРИТМ ЕПІДЕМІОЛОГІЧНИХ ХВИЛЬ ТА ЧАСОВИХ ПЕРІОДІВ (ФІНАЛЬНИЙ)
+function generateDynamicStats(diseaseId, period = 'all') {
+  const currentMonthIdx = new Date().getMonth();
+  const currentYear = new Date().getFullYear(); // 2026
+
+  let labels = [];
+  const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+
+  // Ініціалізуємо правильні мітки часу залежно від обраного табу
+  if (period === '7') {
+    // Для 7 днів генеруємо останні 7 днів (наприклад, 06.06, 07.06...)
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      labels.push(d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' }));
+    }
+  } else if (period === '30') {
+    // Для 30 днів генеруємо зріз по 4 останніх тижнях
+    labels = ['4 тижні тому', '3 тижні тому', '2 тижні тому', 'Поточний тиждень'];
+  } else if (period === '365') {
+    // Для року генеруємо повні 12 місяців назад
+    for (let i = 11; i >= 0; i--) {
+      let idx = currentMonthIdx - i;
+      if (idx < 0) idx += 12;
+      labels.push(monthsArr[idx]);
+    }
+  } else if (period === 'all') {
+    // Для всього часу генеруємо зріз по роках
+    labels = [
+      (currentYear - 4).toString(), // 2022
+      (currentYear - 3).toString(), // 2023
+      (currentYear - 2).toString(), // 2024
+      (currentYear - 1).toString(), // 2025
+      'Поточ. рік'                  // 2026
     ];
+  } else {
+    // Для 3 міс залишаємо стандартні останні 7 місяців
+    for (let i = 6; i >= 0; i--) {
+      let idx = currentMonthIdx - i;
+      if (idx < 0) idx += 12;
+      labels.push(monthsArr[idx]);
+    }
   }
-  return stats;
+
+  // Розрахунок хвильових амплітуд епідемії
+  const match = DISEASES.find(d => d.id === diseaseId);
+  const baseValue = match ? match.cases : 5000;
+  
+  // Короткі періоди повинні відображати значно меншу кількість НОВИХ випадків, ніж рік чи роки!
+  let timeFactor = 1;
+  if (period === '7') timeFactor = 0.02;      // 2% від загального обсягу спалаху на день
+  else if (period === '30') timeFactor = 0.08; // 8% на тиждень
+  else if (period === '90') timeFactor = 0.25; // 25% на місяць
+
+  const avgCasesPerSlot = Math.round((baseValue * timeFactor) / labels.length);
+  let values = [];
+
+  labels.forEach((l, idx) => {
+    // Синусоїда для хвиль спалахів
+    const waveFactor = Math.sin(idx * 1.2) * 0.4 + 0.8;
+    const randomNoise = Math.random() * 0.3 + 0.85;
+    let slotValue = Math.round(avgCasesPerSlot * waveFactor * randomNoise);
+    
+    if (slotValue < 5) slotValue = 12;
+    values.push(slotValue);
+  });
+
+  return { labels, values };
 }
 
-// 2. Ендпоінт загальної статистики для графіків
+// --- СИНХРОНІЗОВАНІ ЧИСТІ ЕНДПОІНТИ (БЕЗ ДУБЛІКАТІВ) ---
 app.get('/api/stats', (req, res) => {
-  const { disease } = req.query;
-  const data = generateDynamicStats(disease);
+  const { disease, period } = req.query;
+  const data = generateDynamicStats(disease, period);
   res.json(data);
 });
 
-// 3. Ендпоінт статистики для картки деталей
 app.get('/api/disease-stats', (req, res) => {
-  const { id } = req.query;
-  const data = generateDynamicStats(id);
+  const { id, period } = req.query;
+  const data = generateDynamicStats(id, period);
   res.json(data);
 });
 
-//ЕНДПОІНТ МАТЕМАТИЧНОГО ПОРІВНЯННЯ РЕГІОНІВ
+// ЕНДПОІНТ МАТЕМАТИЧНОГО ПОРІВНЯННЯ РЕГІОНІВ
 app.get('/api/compare', (req, res) => {
   const { country1, country2 } = req.query;
 
@@ -249,53 +310,33 @@ app.get('/api/compare', (req, res) => {
     return res.status(400).json({ error: 'Необхідно вказати дві країни для порівняння' });
   }
 
-  //всі активні спалахи для першої та другої країни в нашій базі з disease.sh
-  const threats1 = DISEASES.filter(d => d.country.toLowerCase() === country1.toLowerCase());
-  const threats2 = DISEASES.filter(d => d.country.toLowerCase() === country2.toLowerCase());
+  const threats1 = DISEASES.filter(d => d.country && d.country.toLowerCase() === country1.toLowerCase());
+  const threats2 = DISEASES.filter(d => d.country && d.country.toLowerCase() === country2.toLowerCase());
 
-  //сумарна кількість кейсів по кожній країні
   const cases1 = threats1.reduce((sum, d) => sum + d.cases, 0);
   const cases2 = threats2.reduce((sum, d) => sum + d.cases, 0);
 
-  //Математичний прорахунок відсотка загрози (відношення меншого спалаху до більшого + базовий коефіцієнт)
   let riskPercentage = 0;
   if (cases1 > 0 || cases2 > 0) {
     const maxCases = Math.max(cases1, cases2);
     const minCases = Math.min(cases1, cases2);
-    //базовий відсоток загрози динамічним (від 15% до 95%)
     riskPercentage = Math.round((minCases / maxCases) * 50) + 25;
     if (riskPercentage > 95) riskPercentage = 95;
   } else {
-    riskPercentage = 5; //Якщо в обох країнах 0 випадків
+    riskPercentage = 5;
   }
 
-  //інтелектуальний текстовий вердикт на основі реальних цифр
   let verdict = `Дані синхронізовано з ВООЗ. Ситуація стабільна.`;
   if (cases1 > cases2 && cases2 > 0) {
     verdict = `⚠️ Загроза поширення вища з боку регіону ${country1} (${EpiWatchFormatNumber(cases1)} випадків) до ${country2}.`;
   } else if (cases2 > cases1 && cases1 > 0) {
     verdict = `⚠️ Регіон ${country2} має значно вищу інфекційну активність (${EpiWatchFormatNumber(cases2)} випадків). Рекомендується моніторинг кордонів.`;
   } else if (cases1 === cases2 && cases1 > 0) {
-    verdict = `⚡ Обидва регіони мають ідентичний рівень епідеміологічного навантаження штамів.`;
+    verdict = `⚡ Обидва регіони мають ідентичний уровень епідеміологічного навантаження штамів.`;
   }
 
-  //Повертаємо JSON на фронтенд
-  res.json({
-    country1,
-    country2,
-    cases1,
-    cases2,
-    riskPercentage,
-    verdict
-  });
+  res.json({ country1, country2, cases1, cases2, riskPercentage, verdict });
 });
-
-//Допоміжна утиліта форматування цифр для бекенду
-function EpiWatchFormatNumber(n) {
-  if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-  if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-  return n.toString();
-}
 
 const PORT = 3000;
 app.listen(PORT, () => {
