@@ -70,26 +70,50 @@
 <script>
   let allDiseases = [];
 
-  function renderCards() {
-    allDiseases = EpiWatch.getDiseases();
+  // Аسينхронна функція отримання повної бази з сервера Андрія
+  async function fetchDiseasesFromServer() {
+    try {
+      const res = await fetch('/api/map-filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}) // Порожній payload повертає всі реальні дані + старі штами
+      });
+      return await res.json();
+    } catch(e) {
+      console.error("Не вдалося завантажити дані для карток з сервера:", e);
+      return EpiWatch.getDiseases(); // Підстраховка на випадок збою
+    }
+  }
+
+  async function renderCards() {
+    // Чекаємо дані від сервера замість локального масиву
+    if (allDiseases.length === 0) {
+      allDiseases = await fetchDiseasesFromServer();
+    }
+
     const typeF  = document.getElementById('filterDType').value;
     const levelF = document.getElementById('filterDLevel').value;
     let filtered = allDiseases;
-    if (typeF)  filtered = filtered.filter(d => d.type === typeF);
+    
+    if (typeF)  filtered = filtered.filter(d => d.type.toLowerCase() === typeF.toLowerCase());
     if (levelF) filtered = filtered.filter(d => d.level === levelF);
 
     document.getElementById('totalCount').textContent = `Показано: ${filtered.length} захворювань`;
 
     const grid = document.getElementById('cardsGrid');
-    grid.innerHTML = filtered.map(d => `
+    grid.innerHTML = filtered.map(d => {
+      // Захист від відсутності масиву симптомів у деяких API-записах
+      const symptomsList = d.symptoms ? d.symptoms.slice(0,3) : ['Лихоманка'];
+      
+      return `
       <div class="disease-card" onclick="location.href='disease-detail.html?id=${d.id}'">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div class="disease-card__name">${d.name}</div>
+          <div class="disease-card__name" style="max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d.name}</div>
           <span class="badge ${EpiWatch.levelBadgeClass(d.level)}">
-            <span class="badge__dot"></span>${d.levelLabel}
+            <span class="badge__dot"></span>${d.levelLabel || 'Нормальний'}
           </span>
         </div>
-        <div class="disease-card__meta">${d.origin} · ${d.type}: ${d.pathogen}</div>
+        <div class="disease-card__meta" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${d.origin || '2019, Світ'} · ${d.type}: ${d.pathogen}</div>
         <div class="disease-card__stats">
           <div class="disease-card__stat">
             <label>Випадки</label>
@@ -106,24 +130,29 @@
         </div>
         <div class="disease-card__footer">
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            ${d.symptoms.slice(0,3).map(s => `<span class="symptom-tag">${s}</span>`).join('')}
+            ${symptomsList.map(s => `<span class="symptom-tag">${s}</span>`).join('')}
           </div>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa0b4" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
-  //Search
+  // Інтерактивний пошук по всій живій базі сервера
   const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', () => {
+  searchInput.addEventListener('input', async () => {
     const q = searchInput.value.trim().toLowerCase();
     if (!q) { clearSearch(); return; }
 
-    const diseases = EpiWatch.getDiseases();
-    const results = diseases.filter(d =>
+    if (allDiseases.length === 0) {
+      allDiseases = await fetchDiseasesFromServer();
+    }
+
+    const results = allDiseases.filter(d =>
       d.name.toLowerCase().includes(q) ||
       d.pathogen.toLowerCase().includes(q) ||
-      d.symptoms.some(s => s.toLowerCase().includes(q)) ||
+      d.country.toLowerCase().includes(q) ||
+      (d.symptoms && d.symptoms.some(s => s.toLowerCase().includes(q))) ||
       d.type.toLowerCase().includes(q)
     );
 
@@ -131,20 +160,22 @@
     document.getElementById('filtersRow').style.display = 'none';
     document.getElementById('cardsGrid').style.display = 'none';
 
-    const matchWord = diseases[0]?.symptoms.some(s => s.toLowerCase().includes(q)) ? 'за симптомом' : 'за назвою';
+    const hasSymptomsMatch = allDiseases[0]?.symptoms?.some(s => s.toLowerCase().includes(q));
+    const matchWord = hasSymptomsMatch ? 'за симптомом' : 'за назвою/країною';
+    
     document.getElementById('searchMatchInfo').textContent =
-      `Збігів: ${results.length}/${diseases.length} (${Math.round(results.length/diseases.length*100)}%) · пошук ${matchWord}`;
+      `Збігів: ${results.length}/${allDiseases.length} (${Math.round(results.length/allDiseases.length*100)}%) · пошук ${matchWord}`;
 
     document.getElementById('searchResultsList').innerHTML = results.length
       ? results.map(d => `
           <div class="search-result" onclick="location.href='disease-detail.html?id=${d.id}'">
             <div class="search-result__main">
               <div class="search-result__name">${d.name}</div>
-              <div class="search-result__meta">${d.pathogen} · ${d.origin} · ${EpiWatch.formatNumber(d.cases)} випадків</div>
+              <div class="search-result__meta">${d.pathogen} · ${d.origin || 'Живі дані'} · ${EpiWatch.formatNumber(d.cases)} випадків</div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
               <span class="badge ${EpiWatch.levelBadgeClass(d.level)}">
-                <span class="badge__dot"></span>${d.levelLabel}
+                <span class="badge__dot"></span>${d.levelLabel || 'Нормальний'}
               </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
@@ -157,9 +188,9 @@
     document.getElementById('searchResults').style.display = 'none';
     document.getElementById('filtersRow').style.display = 'flex';
     document.getElementById('cardsGrid').style.display = 'grid';
+    renderCards();
   }
 
-  //Init from URL query
   document.addEventListener('DOMContentLoaded', () => {
     renderCards();
     const params = new URLSearchParams(window.location.search);
