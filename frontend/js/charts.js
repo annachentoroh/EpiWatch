@@ -1,6 +1,7 @@
 let mainChart = null;
 let barChartInstance = null;
 let pieChartInstance = null;
+let compareRegionsChartInstance = null; //Змінна для графіка порівняння країн
 
 // Черга для зберігання останніх пошуків (тепер додамо реальний ковід як стартовий)
 let searchHistory = ['covid19_us', 'hantavirus', 'dengue'];
@@ -212,31 +213,75 @@ function handleDiseaseSearch(id) {
   buildPieChart();
 }
 
-//ПОРІВНЯННЯ РЕГІОНІВ
+// АСИНХРОННЕ ПОРІВНЯННЯ РЕГІОНІВ З ВІЗУАЛЬНИМ ГРАФІКОМ
 async function triggerRegionComparisonAPI(c1, c2) {
   const statusBox = document.getElementById('regionComparisonStatus');
-  if (!statusBox) return;
+  const chartWrap = document.getElementById('compareChartWrap');
+  const canvas = document.getElementById('compareRegionsChart');
+  if (!statusBox || !chartWrap || !canvas) return;
   
-  //анімація завантаження
-  statusBox.innerHTML = `<div class="map-loading__spinner" style="margin:0 auto 10px;"></div> Швидкий аналіз баз даних: ${c1} vs ${c2}...`;
+  // Тимчасово ховаємо попередній графік і вмикаємо спінер
+  chartWrap.style.display = 'none';
+  statusBox.innerHTML = `<div class="map-loading__spinner" style="margin:0 auto 10px;"></div> Зіставлення баз даних та побудова метрик: ${c1} vs ${c2}...`;
   
   try {
-    //запит на бекенд з параметрами обраних країн
     const res = await fetch(`/api/compare?country1=${encodeURIComponent(c1)}&country2=${encodeURIComponent(c2)}`);
     if (!res.ok) throw new Error("Помилка відповіді сервера");
     
-    const apiData = await res.json(); // Отримуємо результат від Андрія
+    const apiData = await res.json(); // Отримуємо реальні цифри від Андрія
     
-    //віконце з результатом прорахунку сервера
+    // Виводимо вердикт
     statusBox.innerHTML = `
       <div style="text-align:center;color:#e8eaf0;">
         <span class="badge badge--green" style="margin-bottom:8px;">Реальна аналітика API</span>
         <p style="font-size:15px;font-weight:600;">Коефіцієнт транскордонного ризику (${c1} ↔ ${c2}): <span style="color:#ff4d6d">${apiData.riskPercentage}%</span></p>
-        <p style="font-size:12px;color:#9aa0b4;margin-top:4px;">${apiData.verdict}</p>
+        <p style="font-size:12px;color:#9aa0b4;margin-top:4px; max-width:650px; margin-left:auto; margin-right:auto;">${apiData.verdict}</p>
       </div>
     `;
+
+    // --- МАГІЯ CHART.JS: Будуємо горизонтальний графік порівняння кейсів ---
+    chartWrap.style.display = 'block'; // Відкриваємо зону графіка
+
+    if (compareRegionsChartInstance) compareRegionsChartInstance.destroy();
+
+    compareRegionsChartInstance = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: [c1, c2], // Назви країн на осі
+        datasets: [{
+          label: 'Всього випадків захворювання',
+          data: [apiData.cases1, apiData.cases2], // Реальні мільйонні цифри з бази Андрія
+          backgroundColor: [CHART_COLORS.teal + 'cc', CHART_COLORS.blue + 'cc'],
+          borderColor: [CHART_COLORS.teal, CHART_COLORS.blue],
+          borderWidth: 1.5,
+          borderRadius: 4,
+          barThickness: 16
+        }]
+      },
+      options: {
+        indexAxis: 'y', // Перетворюємо стовпчики на горизонтальні!
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1e2330', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.02)' },
+            ticks: { color: '#5c6378', callback: v => EpiWatch.formatNumber(v) }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { color: '#e8eaf0', font: { weight: '600' } }
+          }
+        }
+      }
+    });
+
   } catch(e) { 
     console.error("Помилка модуля порівняння:", e);
+    chartWrap.style.display = 'none';
     statusBox.innerHTML = `<span style="color:#ff4d6d;">❌ Не вдалося прорахувати загрозу. Перевірте з'єднання з бекендом.</span>`;
   }
 }
