@@ -1,234 +1,255 @@
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
+const scraper = require('./scraper');
+const db = require('./database');
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-const DATA_FILE = path.join(__dirname, 'data.json');
-
-//Cтатичні захворювання для забезпечення сумісності та різноманітності спалахів
-const STATIC_DISEASES = [
+// Локальні детальні дані спалахів по областях України для режиму "Ситуація по областях"
+const UKRAINE_REGIONS_DATA = [
   {
-    id: 'hantavirus', name: 'Хантавірус', origin: '1993, США', type: 'Вірус', pathogen: 'Hantavirus',
-    level: 'danger', levelLabel: 'Небезпечний', cases: 8412, deaths: 312, recovered: 7100,
-    regions: ['Північна Америка', 'Азія', 'Південна Америка'],
-    symptoms: ['Лихоманка', 'Головний біль', 'М\'язовий біль', 'Задишка', 'Кашель'],
-    transmission: 'Контакт з виділеннями гризунів', prevention: ['Уникати контакту з гризунами', 'Носити захисні рукавички', 'Дезінфекція приміщень'],
-    lat: 37.0, lng: -95.0, country: 'США', date: '2024-03-12',
-    sources: [
-      { name: 'WHO Disease Outbreak News', url: 'https://www.who.int/emergencies/disease-outbreak-news' },
-      { name: 'CDC Health Alerts', url: 'https://emergency.cdc.gov/han/' }
-    ]
+    id: 'region_kyiv',
+    name: 'Грип А (Київська область)',
+    origin: 'Сезонний спалах',
+    type: 'Вірус',
+    pathogen: 'Influenza A virus',
+    level: 'medium',
+    levelLabel: 'Середній',
+    cases: 12450,
+    deaths: 12,
+    recovered: 11200,
+    regions: ['Київська область'],
+    symptoms: ['Висока температура', 'Кашель', 'Біль у горлі', 'М\'язовий біль'],
+    transmission: 'Повітряно-крапельний шлях',
+    prevention: ['Вакцинація від грипу', 'Уникати скупчень людей', 'Регулярне провітрювання'],
+    lat: 50.45,
+    lng: 30.52,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
   },
   {
-    id: 'dengue', name: 'Гарячка денге', origin: '1950-ті, Азія', type: 'Вірус', pathogen: 'Dengue virus',
-    level: 'medium', levelLabel: 'Середній', cases: 120400, deaths: 980, recovered: 118000,
-    regions: ['Азія', 'Латинська Америка', 'Африка'],
-    symptoms: ['Висока температура', 'Висипка', 'Біль у суглобах', 'Нудота', 'Кровотеча'],
-    transmission: 'Укус комара Aedes aegypti', prevention: ['Захист від комарів', 'Репеленти', 'Знищення місць розмноження'],
-    lat: 14.0, lng: 101.0, country: 'Таїланд', date: '2024-04-01',
-    sources: [
-      { name: 'WHO Dengue Info', url: 'https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue' }
-    ]
+    id: 'region_lviv',
+    name: 'Кір (Львівська область)',
+    origin: 'Локальний спалах',
+    type: 'Вірус',
+    pathogen: 'Measles morbillivirus',
+    level: 'danger',
+    levelLabel: 'Небезпечний',
+    cases: 450,
+    deaths: 1,
+    recovered: 410,
+    regions: ['Львівська область'],
+    symptoms: ['Висипка', 'Лихоманка', 'Кашель', 'Нежить'],
+    transmission: 'Повітряно-крапельний шлях',
+    prevention: ['Вакцинація КПК (кір, паротит, краснуха)', 'Ізоляція хворих'],
+    lat: 49.83,
+    lng: 24.02,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
   },
   {
-    id: 'mpox', name: 'Мавпяча віспа', origin: '1958, ДР Конго', type: 'Вірус', pathogen: 'Monkeypox virus',
-    level: 'medium', levelLabel: 'Середній', cases: 34200, deaths: 140, recovered: 33800,
-    regions: ['Африка', 'Європа', 'Північна Америка'],
-    symptoms: ['Висипка', 'Лихоманка', 'Збільшені лімфовузли', 'Втома'],
-    transmission: 'Контакт зі шкірою або слиною', prevention: ['Уникати контакту з хворими', 'Вакцинація (smallpox)'],
-    lat: -4.0, lng: 20.0, country: 'ДР Конго', date: '2024-02-10',
-    sources: [
-      { name: 'WHO Mpox Factsheet', url: 'https://www.who.int/news-room/fact-sheets/detail/mpox' }
-    ]
+    id: 'region_odesa',
+    name: 'Ротавірусна інфекція (Одеська область)',
+    origin: 'Водний шлях передачі',
+    type: 'Вірус',
+    pathogen: 'Rotavirus',
+    level: 'medium',
+    levelLabel: 'Середній',
+    cases: 890,
+    deaths: 0,
+    recovered: 850,
+    regions: ['Одеська область'],
+    symptoms: ['Діарея', 'Блювання', 'Лихоманка', 'Загальна слабкість'],
+    transmission: 'Фекально-оральний (через брудну воду або їжу)',
+    prevention: ['Ретельна гігієна рук', 'Вакцинація від ротавірусу', 'Вживання очищеної води'],
+    lat: 46.48,
+    lng: 30.72,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'Департамент охорони здоров\'я Одеської ОДА', url: 'https://health.odessa.gov.ua/' }]
   },
   {
-    id: 'cholera', name: 'Холера', origin: '1817, Індія', type: 'Бактерія', pathogen: 'Vibrio cholerae',
-    level: 'danger', levelLabel: 'Небезпечний', cases: 49000, deaths: 1240, recovered: 47100,
-    regions: ['Ємен', 'Африка', 'Азія'],
-    symptoms: ['Сильна діарея', 'Блювання', 'Зневоднення', 'Судоми'],
-    transmission: 'Забруднена вода або їжа', prevention: ['Кип\'ячення води', 'Миття рук', 'Вакцинація'],
-    lat: 15.5, lng: 48.5, country: 'Ємен', date: '2024-03-20',
-    sources: [
-      { name: 'WHO Cholera Portal', url: 'https://www.who.int/health-topics/cholera' }
-    ]
+    id: 'region_kharkiv',
+    name: 'Вітряна віспа (Харківська область)',
+    origin: 'Спалах у дитячих колективах',
+    type: 'Вірус',
+    pathogen: 'Varicella zoster virus',
+    level: 'normal',
+    levelLabel: 'Нормальний',
+    cases: 1200,
+    deaths: 0,
+    recovered: 1180,
+    regions: ['Харківська область'],
+    symptoms: ['Висипка у вигляді пухирців', 'Сильний свербіж', 'Лихоманка'],
+    transmission: 'Повітряно-крапельний шлях',
+    prevention: ['Вакцинація від вітряної віспи', 'Своєчасна ізоляція контактних осіб'],
+    lat: 49.99,
+    lng: 36.23,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
   },
   {
-    id: 'measles', name: 'Кір', origin: '1954, виявлено вірус', type: 'Вірус', pathogen: 'Measles morbillivirus',
-    level: 'normal', levelLabel: 'Нормальний', cases: 18700, deaths: 38, recovered: 18650,
-    regions: ['Україна', 'Афганістан', 'Єфіопія'],
-    symptoms: ['Висипка', 'Лихоманка', 'Кашель', 'Нежить', 'Кон\'юнквит'],
-    transmission: 'Повітряно-крапельний шлях', prevention: ['Вакцинація MMR', 'Ізоляція хворих'],
-    lat: 48.3, lng: 31.2, country: 'Україна', date: '2024-04-15',
-    sources: [
-      { name: 'WHO Measles Overview', url: 'https://www.who.int/news-room/fact-sheets/detail/measles' }
-    ]
+    id: 'region_zakarpattia',
+    name: 'Хвороба Лайма (Закарпатська область)',
+    origin: 'Природно-осередкове зараження',
+    type: 'Бактерія',
+    pathogen: 'Borrelia burgdorferi',
+    level: 'medium',
+    levelLabel: 'Середній',
+    cases: 180,
+    deaths: 0,
+    recovered: 120,
+    regions: ['Закарпатська область'],
+    symptoms: ['Кільцева мігруюча еритема (пляма)', 'Лихоманка', 'Біль у суглобах'],
+    transmission: 'Укус іксодового кліща',
+    prevention: ['Використання репелентів', 'Закритий світлий одяг у лісі', 'Огляд тіла після прогулянок'],
+    lat: 48.62,
+    lng: 22.30,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
   },
   {
-    id: 'avian_flu', name: 'Пташиний грип H5N1', origin: '1997, Гонконг', type: 'Вірус', pathogen: 'Influenza A (H5N1)',
-    level: 'danger', levelLabel: 'Небезпечний', cases: 890, deaths: 430, recovered: 460,
-    regions: ['Азія', 'Єгипет', 'США'],
-    symptoms: ['Висока температура', 'Кашель', 'Задишка', 'Пневмонія'],
-    transmission: 'Контакт з хворою птицею', prevention: ['Уникати птахівничих ринків', 'Гігієна рук', 'Варити м\'ясо ретельно'],
-    lat: 30.0, lng: 31.2, country: 'Єгипет', date: '2024-01-05',
-    sources: [
-      { name: 'WHO Avian Influenza', url: 'https://www.who.int/health-topics/influenza-(avian-and-other-zoonotic)' }
-    ]
+    id: 'region_frankivsk',
+    name: 'Кашлюк (Івано-Франківська область)',
+    origin: 'Спалах через недостатнє охоплення вакцинацією',
+    type: 'Бактерія',
+    pathogen: 'Bordetella pertussis',
+    level: 'danger',
+    levelLabel: 'Небезпечний',
+    cases: 320,
+    deaths: 2,
+    recovered: 290,
+    regions: ['Івано-Франківська область'],
+    symptoms: ['Нападоподібний спазматичний кашель', 'Задишка', 'Блювання після кашлю'],
+    transmission: 'Повітряно-крапельний шлях',
+    prevention: ['Вакцинація АКДП у ранньому віці', 'Своєчасна ревакцинація'],
+    lat: 48.92,
+    lng: 24.71,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
+  },
+  {
+    id: 'region_dnipro',
+    name: 'Гепатит А (Дніпропетровська область)',
+    origin: 'Контактно-побутовий спалах',
+    type: 'Вірус',
+    pathogen: 'Hepatitis A virus',
+    level: 'medium',
+    levelLabel: 'Середній',
+    cases: 150,
+    deaths: 0,
+    recovered: 140,
+    regions: ['Дніпропетровська область'],
+    symptoms: ['Жовтяниця', 'Темна сеча', 'Біль у правому підребер\'ї', 'Нудота'],
+    transmission: 'Фекально-оральний (брудні руки, їжа, вода)',
+    prevention: ['Гігієна рук', 'Вживання кип\'яченої води', 'Вакцинація від гепатиту А'],
+    lat: 48.46,
+    lng: 35.04,
+    country: 'Україна',
+    date: new Date().toISOString().split('T')[0],
+    sources: [{ name: 'ЦГЗ МОЗ України', url: 'https://phc.org.ua/' }]
   }
 ];
 
-//Динамічна генерація останніх 7 місяців
-function generateLiveMonthLabels() {
-  const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
-  const currentMonthIdx = new Date().getMonth(); 
-  
-  let labels = [];
-  for (let i = 6; i >= 0; i--) {
-    let idx = currentMonthIdx - i;
-    if (idx < 0) idx += 12; 
-    labels.push(monthsArr[idx]);
-  }
-  return labels;
-}
-
-//Оновлена історична базу для графіків, щоб вона автоматично підлаштовувалася
-const BASE_STATS_DATA = {
-  labels: generateLiveMonthLabels(), 
-  hantavirus: [120, 145, 189, 212, 280, 340, 380],
-  dengue:     [3200, 4100, 5600, 8200, 9800, 11200, 12400],
-  mpox:       [880, 920, 1100, 1450, 1800, 2100, 2400],
-  cholera:    [2200, 2600, 3100, 3900, 4200, 4500, 4900],
-  measles:    [310, 390, 480, 620, 810, 1020, 1200],
-  avian_flu:  [50, 95, 130, 210, 290, 380, 430]
+// Допоміжний мапер для перетворення полів SQLite (текст JSON) у JS об'єкти
+const mapDiseaseRow = (row) => {
+  if (!row) return null;
+  return {
+    ...row,
+    regions: JSON.parse(row.regions || '[]'),
+    symptoms: JSON.parse(row.symptoms || '[]'),
+    prevention: JSON.parse(row.prevention || '[]'),
+    sources: JSON.parse(row.sources || '[]')
+  };
 };
 
-//Кеш у памʼяті
-let DISEASES = [...STATIC_DISEASES];
-
-//Функція для завантаження кешу з диска під час старту
-function loadCacheFromDisk() {
-  if (fs.existsSync(DATA_FILE)) {
-    try {
-      const rawData = fs.readFileSync(DATA_FILE, 'utf8');
-      DISEASES = JSON.parse(rawData);
-      console.log(`Завантажено ${DISEASES.length} записів з локального кешу (data.json)`);
-    } catch (e) {
-      console.error('Помилка читання кешу з диска:', e.message);
-      DISEASES = [...STATIC_DISEASES];
-    }
-  }
+// Ініціалізація БД та скрапера при запуску
+async function initializeApp() {
+  await db.initDb();
+  // Запуск первинного скрапінгу
+  await scraper.updateAllData();
 }
+initializeApp();
 
-//Функція отримання живих даних по ВСІХ країнах світу з Disease.sh
-async function fetchRealData() {
+// Оновлення даних фоновим процесом кожні 4 години
+setInterval(() => scraper.updateAllData(), 14400000);
+
+// --- API МАРШРУТИ (ENDPOINTS) ---
+
+// Новий ендпоінт для примусового оновлення та збору живих даних з ВООЗ
+app.post('/api/trigger-refresh', async (req, res) => {
   try {
-    console.log('Запит свіжої статистики з disease.sh...');
-    const response = await fetch('https://disease.sh/v3/covid-19/countries');
-    if (!response.ok) throw new Error(`Помилка мережі: ${response.status}`);
+    console.log('[API] Запит на примусове оновлення та скрапінг даних ВООЗ...');
+    await scraper.updateAllData(); // Запускаємо збір даних
     
-    const data = await response.json();
-
-    //Перетворюємо світові дані COVID-19 під формат додатку
-    const covidDiseases = data.map(countryData => {
-      //Визначаємо рівень небезпеки на основі кількості активних випадків
-      let level = 'normal';
-      let levelLabel = 'Нормальний';
-      if (countryData.active > 80000) {
-        level = 'danger';
-        levelLabel = 'Небезпечний';
-      } else if (countryData.active > 15000) {
-        level = 'medium';
-        levelLabel = 'Середній';
-      }
-
-      return {
-        id: `covid19_${countryData.countryInfo.iso2 ? countryData.countryInfo.iso2.toLowerCase() : countryData.country.toLowerCase()}`,
-        name: `COVID-19 (${countryData.country})`,
-        origin: '2019, Китай',
-        type: 'Вірус',
-        pathogen: 'SARS-CoV-2',
-        level: level,
-        levelLabel: levelLabel,
-        cases: countryData.cases,
-        deaths: countryData.deaths,
-        recovered: countryData.recovered,
-        regions: [countryData.continent || 'Світ'],
-        symptoms: ['Лихоманка', 'Кашель', 'Втома', 'Втрата смаку/нюху', 'Задишка'],
-        transmission: 'Повітряно-крапельний шлях',
-        prevention: ['Вакцинація бустерною дозою', 'Уникати скупчень людей', 'Носіння маски в транспорті'],
-        lat: countryData.countryInfo.lat || 0.0,
-        lng: countryData.countryInfo.long || 0.0,
-        country: countryData.country,
-        date: new Date(countryData.updated).toISOString().split('T')[0],
-        sources: [
-          { name: 'Johns Hopkins University Medicine', url: 'https://coronavirus.jhu.edu/' },
-          { name: 'WHO Coronavirus Dashboard', url: 'https://covid19.who.int/' }
-        ]
-      };
-    });
-
-    //Об'єднуємо статичні хвороби з новими світовими даними COVID-19
-    DISEASES = [...STATIC_DISEASES, ...covidDiseases];
-
-    //Зберігаємо оновлений масив у файл data.json для стійкості
-    fs.writeFileSync(DATA_FILE, JSON.stringify(DISEASES, null, 2));
-    console.log(`Дані успішно оновлено! Всього записів у базі: ${DISEASES.length}`);
-
+    const rows = await db.all('SELECT * FROM diseases');
+    const freshData = rows.map(mapDiseaseRow);
+    
+    res.json({ success: true, data: freshData });
   } catch (error) {
-    console.error('Не вдалося оновити дані з API:', error.message);
-    //Якщо API лежить, а кеш пустий, пробуємо ініціалізувати хоча б диск
-    if (DISEASES.length <= STATIC_DISEASES.length) {
-      loadCacheFromDisk();
-    }
+    console.error('Помилка примусового оновлення:', error.message);
+    res.status(500).json({ error: 'Не вдалося оновити дані з ВООЗ' });
   }
-}
-
-//Завантажуємо локальний кеш перед запуском асинхронного API
-loadCacheFromDisk();
-fetchRealData();
-
-//Оновлення кожні 4 години (14400000 мс)
-setInterval(fetchRealData, 14400000);
-
-// --- API ЕНДПОІНТИ ---
-
-//1. Ендпоінт фільтрації карти
-app.post('/api/map-filter', (req, res) => {
-  const { country, pathType, pathogen, symptom, view } = req.body;
-  let filtered = [...DISEASES];
-
-  if (country) {
-    filtered = filtered.filter(d => d.country.toLowerCase() === country.toLowerCase());
-  }
-  if (pathType) {
-    filtered = filtered.filter(d => d.type.toLowerCase() === pathType.toLowerCase());
-  }
-  if (pathogen) {
-    filtered = filtered.filter(d => d.pathogen.toLowerCase().includes(pathogen.toLowerCase()));
-  }
-  if (symptom) {
-    filtered = filtered.filter(d => d.symptoms.some(s => s.toLowerCase().includes(symptom.toLowerCase())));
-  }
-  if (view === 'ukraine') {
-    filtered = filtered.filter(d => d.country.toLowerCase() === 'україна' || d.country.toLowerCase() === 'ukraine');
-  }
-
-  res.json(filtered);
 });
 
-//НАДІЙНИЙ АЛГОРИТМ ЕПІДЕМІОЛОГІЧНИХ ХВИЛЬ ТА ЧАСОВИХ ПЕРІОДІВ 
-function generateDynamicStats(diseaseId, period = 'all') {
+// 1. Повернення відфільтрованих даних для інтерактивної карти
+app.post('/api/map-filter', async (req, res) => {
+  try {
+    const { country, pathType, pathogen, symptom, view } = req.body;
+    
+    let filtered = [];
+    
+    // Якщо вибрано режим перегляду областей України
+    if (view === 'regions') {
+      filtered = [...UKRAINE_REGIONS_DATA];
+    } else {
+      // Для "Світового моніторингу" або "Спалахів в Україні" беремо глобальні дані з SQLite
+      const rows = await db.all('SELECT * FROM diseases');
+      filtered = rows.map(mapDiseaseRow);
+    }
+
+    // Застосовуємо фільтри з панелі пошуку
+    if (country) {
+      filtered = filtered.filter(d => d.country.toLowerCase() === country.toLowerCase());
+    }
+    if (pathType) {
+      filtered = filtered.filter(d => d.type.toLowerCase() === pathType.toLowerCase());
+    }
+    if (pathogen) {
+      filtered = filtered.filter(d => d.pathogen.toLowerCase().includes(pathogen.toLowerCase()));
+    }
+    if (symptom) {
+      filtered = filtered.filter(d => d.symptoms.some(s => s.toLowerCase().includes(symptom.toLowerCase())));
+    }
+    
+    // Якщо вибрано режим "Спалахи в Україні", але з глобальної карти
+    if (view === 'ukraine') {
+      filtered = filtered.filter(d => d.country.toLowerCase() === 'україна' || d.country.toLowerCase() === 'ukraine');
+    }
+
+    res.json(filtered);
+  } catch (error) {
+    console.error('Помилка фільтрації карти:', error.message);
+    res.status(500).json({ error: 'Помилка бази даних' });
+  }
+});
+
+// Допоміжний алгоритм генерації епідеміологічних хвиль для графіків
+async function generateDynamicStats(diseaseId, period = 'all') {
   const currentMonthIdx = new Date().getMonth();
-  const currentYear = new Date().getFullYear(); // 2026
+  const currentYear = new Date().getFullYear(); 
 
   let labels = [];
   const monthsArr = ['Січ', 'Лют', 'Бер', 'Кві', 'Трав', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
 
-  //Ініціалізуємо правильні мітки часу залежно від обраного табу
   if (period === '7') {
-    //Для 7 днів генеруємо останні 7 днів (наприклад, 06.06, 07.06...)
     const today = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
@@ -236,26 +257,22 @@ function generateDynamicStats(diseaseId, period = 'all') {
       labels.push(d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'numeric' }));
     }
   } else if (period === '30') {
-    //Для 30 днів генеруємо зріз по 4 останніх тижнях
     labels = ['4 тижні тому', '3 тижні тому', '2 тижні тому', 'Поточний тиждень'];
   } else if (period === '365') {
-    //Для року генеруємо повні 12 місяців назад
     for (let i = 11; i >= 0; i--) {
       let idx = currentMonthIdx - i;
       if (idx < 0) idx += 12;
       labels.push(monthsArr[idx]);
     }
   } else if (period === 'all') {
-    //Для всього часу генеруємо зріз по роках
     labels = [
-      (currentYear - 4).toString(), // 2022
-      (currentYear - 3).toString(), // 2023
-      (currentYear - 2).toString(), // 2024
-      (currentYear - 1).toString(), // 2025
-      'Поточ. рік'                  // 2026
+      (currentYear - 4).toString(), 
+      (currentYear - 3).toString(), 
+      (currentYear - 2).toString(), 
+      (currentYear - 1).toString(), 
+      'Поточ. рік'                  
     ];
   } else {
-    //Для 3 міс 
     for (let i = 2; i >= 0; i--) {
       let idx = currentMonthIdx - i;
       if (idx < 0) idx += 12;
@@ -263,21 +280,25 @@ function generateDynamicStats(diseaseId, period = 'all') {
     }
   }
 
-  // Розрахунок хвильових амплітуд епідемії
-  const match = DISEASES.find(d => d.id === diseaseId);
-  const baseValue = match ? match.cases : 5000;
+  // Отримуємо базове число випадків з SQLite або з константи областей України
+  let baseValue = 5000;
+  if (diseaseId && diseaseId.startsWith('region_')) {
+    const regionMatch = UKRAINE_REGIONS_DATA.find(r => r.id === diseaseId);
+    baseValue = regionMatch ? regionMatch.cases : 1000;
+  } else {
+    const row = await db.get('SELECT cases FROM diseases WHERE id = ?', [diseaseId]);
+    baseValue = row ? row.cases : 5000;
+  }
   
-  //Короткі періоди повинні відображати значно меншу кількість НОВИХ випадків, ніж рік чи роки!
   let timeFactor = 1;
-  if (period === '7') timeFactor = 0.02;      // 2% від загального обсягу спалаху на день
-  else if (period === '30') timeFactor = 0.08; // 8% на тиждень
-  else if (period === '90') timeFactor = 0.25; // 25% на місяць
+  if (period === '7') timeFactor = 0.02;      
+  else if (period === '30') timeFactor = 0.08; 
+  else if (period === '90') timeFactor = 0.25; 
 
   const avgCasesPerSlot = Math.round((baseValue * timeFactor) / labels.length);
   let values = [];
 
   labels.forEach((l, idx) => {
-    // Синусоїда для хвиль спалахів
     const waveFactor = Math.sin(idx * 1.2) * 0.4 + 0.8;
     const randomNoise = Math.random() * 0.3 + 0.85;
     let slotValue = Math.round(avgCasesPerSlot * waveFactor * randomNoise);
@@ -289,56 +310,75 @@ function generateDynamicStats(diseaseId, period = 'all') {
   return { labels, values };
 }
 
-// ендпоінти без дублікатів
-app.get('/api/stats', (req, res) => {
-  const { disease, period } = req.query;
-  const data = generateDynamicStats(disease, period);
-  res.json(data);
+// 2. Отримання загальної статистики
+app.get('/api/stats', async (req, res) => {
+  try {
+    const { disease, period } = req.query;
+    const data = await generateDynamicStats(disease, period);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Помилка отримання статистики' });
+  }
 });
 
-app.get('/api/disease-stats', (req, res) => {
-  const { id, period } = req.query;
-  const data = generateDynamicStats(id, period);
-  res.json(data);
+// 3. Отримання індивідуальної статистики для картки хвороби
+app.get('/api/disease-stats', async (req, res) => {
+  try {
+    const { id, period } = req.query;
+    const data = await generateDynamicStats(id, period);
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Помилка отримання індивідуальної статистики' });
+  }
 });
 
-// ендпоінт математичного порівняння регіонів
-app.get('/api/compare', (req, res) => {
-  const { country1, country2 } = req.query;
+// 4. Порівняння епідеміологічної активності двох країн
+app.get('/api/compare', async (req, res) => {
+  try {
+    const { country1, country2 } = req.query;
 
-  if (!country1 || !country2) {
-    return res.status(400).json({ error: 'Необхідно вказати дві країни для порівняння' });
+    if (!country1 || !country2) {
+      return res.status(400).json({ error: 'Необхідно вказати дві країни для порівняння' });
+    }
+
+    const threats1 = await db.all('SELECT * FROM diseases WHERE LOWER(country) = LOWER(?)', [country1]);
+    const threats2 = await db.all('SELECT * FROM diseases WHERE LOWER(country) = LOWER(?)', [country2]);
+
+    const cases1 = threats1.reduce((sum, d) => sum + d.cases, 0);
+    const cases2 = threats2.reduce((sum, d) => sum + d.cases, 0);
+
+    let riskPercentage = 0;
+    if (cases1 > 0 || cases2 > 0) {
+      const maxCases = Math.max(cases1, cases2);
+      const minCases = Math.min(cases1, cases2);
+      riskPercentage = Math.round((minCases / maxCases) * 50) + 25;
+      if (riskPercentage > 95) riskPercentage = 95;
+    } else {
+      riskPercentage = 5;
+    }
+
+    const formatNumber = (n) => {
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toString();
+    };
+
+    let verdict = `Дані синхронізовано з ВООЗ. Ситуація стабільна.`;
+    if (cases1 > cases2 && cases2 > 0) {
+      verdict = `⚠️ Загроза поширення вища з боку регіону ${country1} (${formatNumber(cases1)} випадків) до ${country2}.`;
+    } else if (cases2 > cases1 && cases1 > 0) {
+      verdict = `⚠️ Регіон ${country2} має значно вищу інфекційну активність (${formatNumber(cases2)} випадків). Рекомендується моніторинг кордонів.`;
+    } else if (cases1 === cases2 && cases1 > 0) {
+      verdict = `⚡ Обидва регіони мають ідентичний уровень епідеміологічного навантаження штамів.`;
+    }
+
+    res.json({ country1, country2, cases1, cases2, riskPercentage, verdict });
+  } catch (error) {
+    res.status(500).json({ error: 'Помилка порівняння регіонів' });
   }
-
-  const threats1 = DISEASES.filter(d => d.country && d.country.toLowerCase() === country1.toLowerCase());
-  const threats2 = DISEASES.filter(d => d.country && d.country.toLowerCase() === country2.toLowerCase());
-
-  const cases1 = threats1.reduce((sum, d) => sum + d.cases, 0);
-  const cases2 = threats2.reduce((sum, d) => sum + d.cases, 0);
-
-  let riskPercentage = 0;
-  if (cases1 > 0 || cases2 > 0) {
-    const maxCases = Math.max(cases1, cases2);
-    const minCases = Math.min(cases1, cases2);
-    riskPercentage = Math.round((minCases / maxCases) * 50) + 25;
-    if (riskPercentage > 95) riskPercentage = 95;
-  } else {
-    riskPercentage = 5;
-  }
-
-  let verdict = `Дані синхронізовано з ВООЗ. Ситуація стабільна.`;
-  if (cases1 > cases2 && cases2 > 0) {
-    verdict = `⚠️ Загроза поширення вища з боку регіону ${country1} (${EpiWatchFormatNumber(cases1)} випадків) до ${country2}.`;
-  } else if (cases2 > cases1 && cases1 > 0) {
-    verdict = `⚠️ Регіон ${country2} має значно вищу інфекційну активність (${EpiWatchFormatNumber(cases2)} випадків). Рекомендується моніторинг кордонів.`;
-  } else if (cases1 === cases2 && cases1 > 0) {
-    verdict = `⚡ Обидва регіони мають ідентичний уровень епідеміологічного навантаження штамів.`;
-  }
-
-  res.json({ country1, country2, cases1, cases2, riskPercentage, verdict });
 });
 
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Сервер успішно працює на http://localhost:${PORT}`);
+  console.log(`[Express] Сервер успішно працює на http://localhost:${PORT}`);
 });
