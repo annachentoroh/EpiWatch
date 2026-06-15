@@ -707,7 +707,6 @@ ul { list-style: none; }
 .search-result__match { font-size: 13px; color: var(--teal); font-weight: 500; white-space: nowrap; }
 
 
-/*RESPONSIVE*/
 @media (max-width: 900px) {
   :root {
     --nav-h: 58px;
@@ -716,7 +715,7 @@ ul { list-style: none; }
   .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .filters-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .detail-grid { grid-template-columns: 1fr; gap: 20px; }
-  .edu-grid { grid-template-columns: 1fr; }
+  .edu-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
 @media (max-width: 600px) {
@@ -724,31 +723,76 @@ ul { list-style: none; }
     --radius: 12px;
   }
   
-  /* Базові відступи екрана */
-  .container { padding: 0 16px; }
+  html, body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .page {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    display: block !important;
+    height: auto !important;
+    clear: both;
+  }
+
+  .container { 
+    padding: 0 16px; 
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
   .page { padding-top: calc(var(--nav-h) + 16px); padding-bottom: 40px; }
 
-  /* НАВІГАЦІЯ (Фікс злітання посилань докупи) */
+  /* НАВІГАЦІЯ (Перетворення меню на горизонтальну карусель) */
   .nav { 
-    padding: 0 16px; 
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .nav__logo { 
-    font-size: 17px; 
-    margin-right: 0; /* Прибираємо розтягування */
-  }
-  .nav__logo svg { width: 18px; height: 18px; }
-  .nav__search { display: none !important; } /* Ховаємо мікро-пошук */
-  
-  /* Робимо посилання компактними кнопками */
-  .nav__links { gap: 2px; }
-  .nav__links a {
-    font-size: 12px;
-    padding: 6px 10px;
+    padding: 0 12px; 
+    justify-content: flex-start; /* Вирівнюємо від лівого краю */
+    gap: 8px;
+    overflow-x: auto; /* Дозволяємо шапці скролитися, якщо логотип теж заважає */
   }
 
-  /* СТАТИСТИЧНІ КАРТКИ (Випадки, Смерті...) */
+  .nav__logo { 
+    font-size: 16px; 
+    margin-right: 8px;
+    flex-shrink: 0; /* Щоб логотип не стискався в кашу */
+  }
+  .nav__logo svg { width: 18px; height: 18px; }
+  .nav__search { display: none !important; } 
+  
+  /* Перетворюємо блок посилань на горизонтальну стрічку, яку можна гортати пальцем */
+  .nav__links { 
+    display: flex !important;
+    flex-direction: row !important; /* Тільки в один рядок */
+    gap: 6px; 
+    overflow-x: auto !important; /* УВАГА: вмикаємо горизонтальний скрол для кнопок */
+    scroll-behavior: smooth;
+    white-space: nowrap; /* Забороняємо кнопкам переноситися на новий рядок */
+    flex-grow: 1;
+    
+    /* Приховуємо стандартний потворний scrollbar на мобільних, щоб меню виглядало нативно */
+    -webkit-overflow-scrolling: touch; /* Плавний скрол на iOS */
+    scrollbar-width: none; /* Для Firefox */
+  }
+
+  /* Приховуємо scrollbar для Chrome/Safari */
+  .nav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Самі кнопочки меню */
+  .nav__links a {
+    font-size: 13px;
+    padding: 6px 12px;
+    flex-shrink: 0; /* КРИТИЧНО: забороняємо кнопкам звужуватися, тримаємо їхній текст! */
+    display: inline-block;
+  }
+
+  /*  СТАТИСТИЧНІ КАРТКИ */
   .stat-cards { 
     grid-template-columns: 1fr; 
     gap: 10px; 
@@ -758,30 +802,31 @@ ul { list-style: none; }
   .stat-card__label { font-size: 11px; margin-bottom: 4px; }
   .stat-card__value { font-size: 28px; }
 
-  /* ФІЛЬТРИ ТА ПОШУК */
-  .filters { flex-direction: column; align-items: scale; gap: 10px; }
+  /*  ФІЛЬТРИ ТА ПОШУК */
+  .filters { flex-direction: column; align-items: stretch; gap: 10px; }
   .filter-group { width: 100%; }
   .filter-select { 
-    width: 100%; 
-    min-width: 100%; 
-    padding: 10px 30px 10px 12px; /* Збільшуємо зону тапу */
+    width: 100% !important; 
+    min-width: 100% !important; 
+    padding: 10px 30px 10px 12px; 
     font-size: 14px;
+    box-sizing: border-box !important;
   }
   .filters-grid { grid-template-columns: 1fr; gap: 10px; }
   
-  .search-bar { padding: 12px 16px; }
+  .search-bar { padding: 12px 16px; width: 100% !important; box-sizing: border-box !important; }
   .search-bar input { font-size: 15px; }
 
-  /* ГЕРОЙ-БЛОК (Головна сторінка) */
-  .hero { padding: 40px 12px 32px; }
+  /*  ГЕРОЙ-БЛОК */
+  .hero { padding: 40px 12px 32px; box-sizing: border-box; }
   .hero::before { width: 100%; height: 200px; }
   .hero__title { font-size: 28px; line-height: 1.2; margin-bottom: 12px; }
   .hero__sub { font-size: 14px; line-height: 1.5; }
   .hero__cta { flex-direction: column; width: 100%; gap: 10px; }
   .hero__cta .btn { width: 100%; justify-content: center; padding: 12px; }
 
-  /* КАРТКИ ЗАХВОРЮВАНЬ (Запобігаємо вилазити за краї) */
-  .disease-card { padding: 16px; }
+  /* КАРТКИ ЗАХВОРЮВАНЬ */
+  .disease-card { padding: 16px; box-sizing: border-box !important; }
   .disease-card__name { font-size: 16px; }
   .disease-card__stats { gap: 12px; flex-wrap: wrap; }
   .disease-card__stat span { font-size: 18px; }
@@ -789,29 +834,95 @@ ul { list-style: none; }
   /* ТАБЛИЦІ ТА СТАТИСТИКА В ДЕТАЛЯХ */
   .info-row { padding: 10px 12px; }
   .info-row label, .info-row span { font-size: 12px; }
-  .chart-wrap { padding: 16px; }
-  .chart-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   
-  /* ТЕСТ-ВІРУС (Квіз як мобільний додаток) */
+  /* ГРАФІКИ ТА ДІАГРАМИ */
+  .chart-wrap {
+    height: auto !important;
+    padding: 14px !important;
+    margin-bottom: 16px;
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+  }
+  .chart-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .chart-wrap canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  .chart-wrap .legend, 
+  [class*="legend"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    margin-top: 12px;
+  }
+
+  /* ПОРІВНЯННЯ РЕГІОНІВ (Селектори країн) */
+  [class*="compare"], 
+  .region-box,
+  .detail-grid + .card,
+  div:has(> select + span + select) { 
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+  [class*="compare"] select,
+  .region-box select {
+    width: 100% !important;
+    min-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  [class*="compare"] span, 
+  .region-box span {
+    text-align: center;
+    margin: 2px 0;
+    color: var(--text3);
+    font-size: 12px;
+  }
+  
+  /* ТЕСТ-ВІРУС (КВІЗ) */
   .quiz-hero { padding: 30px 12px 20px; }
   .quiz-hero h1 { font-size: 26px; }
-  .quiz-card, .result-card { padding: 20px 16px; border-radius: var(--radius); }
+  .quiz-card, .result-card { padding: 20px 16px; border-radius: var(--radius); box-sizing: border-box; }
   .quiz-question { font-size: 18px; }
-  .quiz-option { padding: 12px; font-size: 13px; }
+  .quiz-option { padding: 12px; font-size: 13px; width: 100%; box-sizing: border-box; }
 
-  /* ГЛОСАРІЙ ТА МІФИ */
-  .myth-card { padding: 16px; }
+  /* ОСВІТНІЙ БЛОК ТА МІФИ (Лікування горизонтального скролу тут) */
+  .edu-grid { 
+    grid-template-columns: 1fr !important; 
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .edu-card { 
+    width: 100% !important; 
+    box-sizing: border-box !important; 
+    padding: 16px !important;
+  }
+  
+  .myth-card { 
+    padding: 16px; 
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
   .myth-card__claim { flex-direction: column; gap: 6px; }
   .myth-card__claim-badge { margin-top: 0; }
-  .myth-card__truth { padding: 10px 12px; font-size: 12px; }
+  .myth-card__truth { 
+    padding: 10px 12px; 
+    font-size: 12px; 
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
 
   /* КАРТА */
-  #map { height: 350px; } /* Робимо карту трохи компактнішою на мобілках */
+  #map { height: 350px; width: 100% !important; } 
 
-  /* ФУТЕР (Верифікація ВООЗ) */
+  /* ФУТЕР */
   .footer { 
     padding: 20px 16px 32px 16px; 
     font-size: 11px; 
     line-height: 1.5;
+    box-sizing: border-box !important;
   }
 }
