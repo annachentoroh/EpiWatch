@@ -358,7 +358,7 @@ function setupRegionCustomSearch() {
   if (!rInput || !rDrop || !box) return;
 
   setTimeout(() => {
-    renderRegionStatus('Україна');
+    renderRegionStatus('Ukraine');
   }, 1000);
 
   rInput.addEventListener('input', () => {
@@ -403,21 +403,30 @@ async function renderRegionStatus(countryName) {
   if (!box) return;
 
   const diseases = await fetchFilteredMapDataFromServer({});
-  const localThreats = diseases.filter(d => d.country.toLowerCase() === countryName.toLowerCase());
+  // Фільтруємо ВСІ загрози для обраної країни
+  const localThreats = diseases.filter(d => d.country && d.country.toLowerCase() === countryName.toLowerCase());
 
   if (localThreats.length > 0) {
-    const t = localThreats[0];
+    // Формуємо красиві посилання для кожної хвороби, що є в регіоні
+    const threatsLinks = localThreats.map(t => `
+      <a href="disease-detail.html?id=${t.id}" style="color:#00c9a7; font-size:13px; text-decoration:underline; margin-right:12px; display:inline-block;">
+        ${t.name} →
+      </a>
+    `).join('');
+
     box.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span class="badge badge--green"><span class="badge__dot"></span>Ваш регіон: ${countryName}</span>
-        <span style="color:#9aa0b4;font-size:13px;">Активних загроз у вашому регіоні: <strong style="color:#ff4d6d;">${localThreats.length}</strong></span>
-        <a href="disease-detail.html?id=${t.id}" style="color:#00c9a7;font-size:13px;text-decoration:underline;">${t.name} — дізнатись більше →</a>
+        <span style="color:#9aa0b4; font-size:13px;">Активних загроз у вашому регіоні: <strong style="color:#ff4d6d;">${localThreats.length}</strong></span>
+        <div style="display:inline-block; margin-left:10px;">
+          ${threatsLinks}
+        </div>
       </div>`;
   } else {
     box.innerHTML = `
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
         <span class="badge badge--green" style="background:rgba(0,201,167,0.1); color:#00c9a7;"><span class="badge__dot" style="background:#00c9a7;"></span>Ваш регіон: ${countryName}</span>
-        <span style="color:#9aa0b4;font-size:13px;">🎉 Чудові новини! Активних інфекційних загроз не виявлено.</span>
+        <span style="color:#9aa0b4; font-size:13px;">🎉 Чудові новини! Активних інфекційних загроз не виявлено.</span>
       </div>`;
   }
 }
