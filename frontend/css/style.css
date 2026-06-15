@@ -709,14 +709,109 @@ ul { list-style: none; }
 
 /*RESPONSIVE*/
 @media (max-width: 900px) {
-  .stat-cards { grid-template-columns: 1fr 1fr; }
-  .filters-grid { grid-template-columns: 1fr 1fr; }
-  .detail-grid { grid-template-columns: 1fr; }
+  :root {
+    --nav-h: 58px;
+  }
+  .page { padding-top: calc(var(--nav-h) + 20px); }
+  .stat-cards { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .filters-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .detail-grid { grid-template-columns: 1fr; gap: 20px; }
+  .edu-grid { grid-template-columns: 1fr; }
 }
+
 @media (max-width: 600px) {
+  :root {
+    --radius: 12px;
+  }
+  
+  /* Базові відступи екрана */
   .container { padding: 0 16px; }
-  .nav { padding: 0 16px; }
-  .stat-cards { grid-template-columns: 1fr; }
-  .filters-grid { grid-template-columns: 1fr; }
-  .nav__search { display: none; }
+  .page { padding-top: calc(var(--nav-h) + 16px); padding-bottom: 40px; }
+
+  /* НАВІГАЦІЯ (Фікс злітання посилань докупи) */
+  .nav { 
+    padding: 0 16px; 
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .nav__logo { 
+    font-size: 17px; 
+    margin-right: 0; /* Прибираємо розтягування */
+  }
+  .nav__logo svg { width: 18px; height: 18px; }
+  .nav__search { display: none !important; } /* Ховаємо мікро-пошук */
+  
+  /* Робимо посилання компактними кнопками */
+  .nav__links { gap: 2px; }
+  .nav__links a {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  /* СТАТИСТИЧНІ КАРТКИ (Випадки, Смерті...) */
+  .stat-cards { 
+    grid-template-columns: 1fr; 
+    gap: 10px; 
+    margin-bottom: 16px;
+  }
+  .stat-card { padding: 14px 16px; }
+  .stat-card__label { font-size: 11px; margin-bottom: 4px; }
+  .stat-card__value { font-size: 28px; }
+
+  /* ФІЛЬТРИ ТА ПОШУК */
+  .filters { flex-direction: column; align-items: scale; gap: 10px; }
+  .filter-group { width: 100%; }
+  .filter-select { 
+    width: 100%; 
+    min-width: 100%; 
+    padding: 10px 30px 10px 12px; /* Збільшуємо зону тапу */
+    font-size: 14px;
+  }
+  .filters-grid { grid-template-columns: 1fr; gap: 10px; }
+  
+  .search-bar { padding: 12px 16px; }
+  .search-bar input { font-size: 15px; }
+
+  /* ГЕРОЙ-БЛОК (Головна сторінка) */
+  .hero { padding: 40px 12px 32px; }
+  .hero::before { width: 100%; height: 200px; }
+  .hero__title { font-size: 28px; line-height: 1.2; margin-bottom: 12px; }
+  .hero__sub { font-size: 14px; line-height: 1.5; }
+  .hero__cta { flex-direction: column; width: 100%; gap: 10px; }
+  .hero__cta .btn { width: 100%; justify-content: center; padding: 12px; }
+
+  /* КАРТКИ ЗАХВОРЮВАНЬ (Запобігаємо вилазити за краї) */
+  .disease-card { padding: 16px; }
+  .disease-card__name { font-size: 16px; }
+  .disease-card__stats { gap: 12px; flex-wrap: wrap; }
+  .disease-card__stat span { font-size: 18px; }
+  
+  /* ТАБЛИЦІ ТА СТАТИСТИКА В ДЕТАЛЯХ */
+  .info-row { padding: 10px 12px; }
+  .info-row label, .info-row span { font-size: 12px; }
+  .chart-wrap { padding: 16px; }
+  .chart-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  
+  /* ТЕСТ-ВІРУС (Квіз як мобільний додаток) */
+  .quiz-hero { padding: 30px 12px 20px; }
+  .quiz-hero h1 { font-size: 26px; }
+  .quiz-card, .result-card { padding: 20px 16px; border-radius: var(--radius); }
+  .quiz-question { font-size: 18px; }
+  .quiz-option { padding: 12px; font-size: 13px; }
+
+  /* ГЛОСАРІЙ ТА МІФИ */
+  .myth-card { padding: 16px; }
+  .myth-card__claim { flex-direction: column; gap: 6px; }
+  .myth-card__claim-badge { margin-top: 0; }
+  .myth-card__truth { padding: 10px 12px; font-size: 12px; }
+
+  /* КАРТА */
+  #map { height: 350px; } /* Робимо карту трохи компактнішою на мобілках */
+
+  /* ФУТЕР (Верифікація ВООЗ) */
+  .footer { 
+    padding: 20px 16px 32px 16px; 
+    font-size: 11px; 
+    line-height: 1.5;
+  }
 }
