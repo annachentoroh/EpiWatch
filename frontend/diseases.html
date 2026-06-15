@@ -70,13 +70,13 @@
 <script>
   let allDiseases = [];
 
-  // Аسينхронна функція отримання повної бази з сервера Андрія
+  // Асинхронна функція отримання повної бази з сервера
   async function fetchDiseasesFromServer() {
     try {
       const res = await fetch('/api/map-filter', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}) // Порожній payload повертає всі реальні дані + старі штами
+        body: JSON.stringify({}) // Порожній payload повертає всі реальні дані + додаткові дані
       });
       return await res.json();
     } catch(e) {
@@ -86,7 +86,7 @@
   }
 
   async function renderCards() {
-    // Чекаємо дані від сервера замість локального масиву
+    // Чекання даних від сервера замість локального масиву
     if (allDiseases.length === 0) {
       allDiseases = await fetchDiseasesFromServer();
     }

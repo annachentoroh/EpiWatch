@@ -1,6 +1,6 @@
 const EpiWatch = (() => {
 
-  // 1. БАЗА ДАНИХ ДЛЯ 6 ЗАХВОРЮВАНЬ (Замість старих штамів)
+  /* Статичний масив об'єктів з детальною епідеміологічною інформацією про хвороби */
   const DISEASES = [
     {
       id: 'covid19',
@@ -93,7 +93,7 @@ const EpiWatch = (() => {
       ],
       steps: [
         'З першої хвилини почніть пити регідратаційні розчини (Регідрон) великими ковтками.',
-        'Негайно викликайте екстрену медичну допомогу 103 — смерть може настати за добу.',
+        'Негайно викликайте екстрену медичную допомогу 103 — смерть може настати за добу.',
         'Категорично заборонено приймати протидіарейні препарати на кшталт лопераміду.',
         'Продезінфікуйте санвузли хлорвмісними засобами для захисту родини.'
       ],
@@ -213,7 +213,7 @@ const EpiWatch = (() => {
     }
   ];
 
-  // 2. ДИНАМІЧНИЙ ТРЕНД ДЛЯ 6 ХВОРОБ
+  /* Дані щомісячної статистики захворюваності для побудови графіків */
   const STATS_DATA = {
     labels: ['Гру', 'Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер'],
     covid19:      [45000, 68000, 89000, 52000, 31000, 18000, 12000],
@@ -224,8 +224,9 @@ const EpiWatch = (() => {
     malaria:      [12000, 14500, 18900, 21200, 25000, 29000, 34000]
   };
 
-  // 3. ЦЕНТРАЛІЗОВАНА БАЗА ДЛЯ ОСВІТНЬОГО БЛОКУ (Firstaid, 12 Myths, Glossary)
+  /* Об'єкт структурованих освітніх матеріалів: перша допомога, міфи, глосарій */
   const EDUCATION_DATA = {
+    /* Генерація списку першої допомоги на основі масиву хвороб за допомогою мапінгу */
     firstaid: DISEASES.map(d => ({
       id: d.id,
       icon: d.id === 'covid19' ? '👑' : d.id === 'measles' ? '🔴' : d.id === 'cholera' ? '💧' : d.id === 'polio' ? '🩼' : d.id === 'tuberculosis' ? '🫁' : '🦟',
@@ -235,6 +236,7 @@ const EpiWatch = (() => {
       steps: d.steps
     })),
     
+    /* Масив медичних міфів та маніпуляцій з їх науковим спростуванням */
     myths: [
       // COVID-19
       { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Антибіотики допомагають вилікувати або запобігти COVID-19»', truth: 'Антибіотики знищують лише бактерії. COVID-19 викликається вірусом SARS-CoV-2. Вони призначаються виключно лікарем у стаціонарі у випадку розвитку вторинної бактеріальної пневмонії.', linkName: 'ВООЗ: Міфи про антибіотики', linkUrl: 'https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public/myth-busters' },
@@ -246,8 +248,8 @@ const EpiWatch = (() => {
       { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Холера передається по повітрю при розмові або кашлі з хворим»', truth: 'Холера є кишковою інфекцією та передається виключно фекально-оральним шляхом через забруднену воду, їжу або брудні руки. Повітряно-крапельного шляху передачі холери не існує.', linkName: 'CDC: Передача холери', linkUrl: 'https://www.cdc.gov/global-health/topics-programs/ihr.html' },
       { badge: '⚠️ Маніпуляція', badgeClass: 'myth-card__claim-badge badge--yellow', claim: '«Вживання міцного алкоголю повністю дезінфікує шлунок від холерного вібріона»', truth: 'Алкоголь руйнує захисний бар’єр шлунка та знижує кислотність шлункового соку, що навпаки полегшує бактеріям Vibrio cholerae проходження далі в тонкий кишківник, де вони починають виділяти токсин.', linkName: 'CDC: Передача холери', linkUrl: 'https://www.cdc.gov/global-health/topics-programs/ihr.html' },
       // Поліомієліт
-      { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Поліомієліт повністю зник у світі, тому вакцинація вже непотрібна»', truth: 'Поки у світі (наприклад, у Пакистані чи Афганістані) залишається бодай одна інфікована дитина, вірус може легко поширитися у будь-яку країну серед невакцинованого населення та викликати масові паралічі.', linkName: 'ВООЗ: Статус ліквідації поліо', linkUrl: 'https://www.who.int/health-topics/poliomyelitis' },
-      { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Жива оральна вакцина (краплі) завжди викликає параліч у щепленої дитини»', truth: 'Вкрай рідкісний випадок вакциноасоційованого паралічу може виникнути лише у дітей із важким вродженим імунодефіцитом. Для повного виключення цього ризику перші два щеплення в Україні роблять інактивованою ін’єкційною вакциною (ІПВ).', linkName: 'МОЗ: Вакцини, поліо', linkUrl: 'https://moz.gov.ua/uk/v-ukrayini-fiksuyut-pozitivnu-dinamiku-ohoplennya-sheplennyami-u-2025-roci-bilshist-pokaznikiv-perevishili-90' },
+      { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Поліомієліт повністю зник у світі, тому狂вакцинація вже непотрібна»', truth: 'Поки у світі (наприклад, у Пакистані чи Афганістані) залишається бодай одна інфікована дитина, вірус може легко поширитися у будь-яку країну серед невакцинованого населення та викликати масові паралічі.', linkName: 'ВООЗ: Статус ліквідації поліо', linkUrl: 'https://www.who.int/health-topics/poliomyelitis' },
+      { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Жива оральна вакцина (краплі) завжди викликає параліч у щепленої дитини»', truth: 'Вкрай рідкісний випадок вакциноасоційованого паралічу може виникнути лише у дітей із важким вродженим імунодефіцитом. Для повного виключення цього ризику перші два щеплення в Україні роблять інактированою ін’єкційною вакциною (ІПВ).', linkName: 'МОЗ: Вакцини, поліо', linkUrl: 'https://moz.gov.ua/uk/v-ukrayini-fiksuyut-pozitivnu-dinamiku-ohoplennya-sheplennyami-u-2025-roci-bilshist-pokaznikiv-perevishili-90' },
       // Туберкульоз
       { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«На туберкульоз хворіють лише бідні, безпритульні та ув’язнені»', truth: 'Туберкульоз поширюється повітрям, паличка Коха не обирає соціальний статус. Заразитися можна у громадському транспорті, кафе чи магазині. Ризик захворювання залежить виключно від стану імунітету людини.', linkName: 'ЦГЗ: Соціальні аспекти туберкульозу', linkUrl: 'https://phc.org.ua/news/mizhnarodna-naukovo-praktichna-konferenciya-vil-asociyovaniy-tuberkuloz-epidemiologichni' },
       { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Вакцина БЦЖ у пологовому будинку повністю захищає від зараження туберкульозом на все життя»', truth: 'БЦЖ не захищає від інфікування в дорослому віці, проте вона гарантовано захищає немовлят від смертельних та важких форм генералізованого туберкульозу, таких як туберкульозний менінгіт.', linkName: 'МОЗ: Навіщо потрібна БЦЖ', linkUrl: 'https://moz.gov.ua/uk/vakcina-proti-tuberkulozu-bczh-zahishaye-vid-nebezpechnih-naslidkiv-hvorobi' },
@@ -256,6 +258,7 @@ const EpiWatch = (() => {
       { badge: '❌ Міф', badgeClass: 'myth-card__claim-badge', claim: '«Малярію можна повністю вилікувати вживанням часнику або імбиру»', truth: 'Малярія викликається мікроскопічними паразитами крові (плазмодіями). Жодні народні методи не діють на них. Без лікування специфічними артемізиніновими препаратами хвороба швидко руйнує еритроцити та призводить до коми та смерті.', linkName: 'ВООЗ: Лікування малярії', linkUrl: 'https://www.who.int/teams/global-malaria-programme/case-management' }
     ],
     
+    /* Словник медичних термінів */
     glossary: [
       { term: 'Паличка Коха', definition: 'Популярна назва бактерії Mycobacterium tuberculosis, яка є головним збудником туберкульозу в людей, відкрита Робертом Кохом у 1882 році.' },
       { term: 'Малярійний плазмодій', definition: 'Рід найпростіших (протистів), які паразитують в еритроцитах крові людини та викликають малярію. Переноситься виключно комарами Anopheles.' },
@@ -268,11 +271,13 @@ const EpiWatch = (() => {
     ]
   };
 
+  /* Геттери для доступу до приватних даних модуля */
   function getEducationData() { return EDUCATION_DATA; }
   function getDiseases() { return DISEASES; }
   function getDiseaseById(id) { return DISEASES.find(d => d.id === id); }
   function getStatsData() { return STATS_DATA; }
 
+  /* Вибірка унікальних значень для фільтрації інтерфейсу за допомогою Set */
   function getUniqueCountries() { return [...new Set(DISEASES.map(d => d.country))]; }
   function getUniqueTypes() { return [...new Set(DISEASES.map(d => d.type))]; }
   function getUniquePathogens() { return [...new Set(DISEASES.map(d => d.pathogen))]; }
@@ -282,19 +287,23 @@ const EpiWatch = (() => {
     return [...new Set(s)]; 
   }
 
+  /* Форматування чисел у компактний вигляд з суфіксами K (тисячі) та M (мільйони) */
   function formatNumber(n) {
     if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
     if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
     return n.toString();
   }
 
+  /* Повернення HEX-коду кольору відповідно до рівня небезпеки */
   function levelColor(level) {
     return { normal: '#00c9a7', medium: '#ffd166', danger: '#ff4d6d' }[level] || '#9aa0b4';
   }
+  /* Повернення назви CSS-класу бейджа для рівнів небезпеки */
   function levelBadgeClass(level) {
     return { normal: 'badge--green', medium: 'badge--yellow', danger: 'badge--red' }[level] || '';
   }
 
+  /* Автоматичне встановлення класу "active" для посилання поточного URL у меню */
   function setActiveNav() {
     const path = window.location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('.nav__links a').forEach(a => {
@@ -305,6 +314,7 @@ const EpiWatch = (() => {
     });
   }
 
+  /* Шаблон HTML-розмітки головного меню навігації */
   const NAV_HTML = `
   <nav class="nav">
     <a href="index.html" class="nav__logo">
@@ -330,6 +340,7 @@ const EpiWatch = (() => {
     </div>
   </nav>`;
 
+  /* Шаблон HTML-розмітки підвалу сторінки (Footer) */
   const FOOTER_HTML = `
   <footer class="footer">
     <p>© 2026 EpiWatch — Інформаційно-аналітична платформа епідеміологічного моніторингу</p>
@@ -341,6 +352,7 @@ const EpiWatch = (() => {
     </p>
   </footer>`;
 
+  /* Ін'єкція спільних елементів (шапки, підвалу) в DOM та ініціалізація глобального пошуку */
   function injectShell() {
     const navEl = document.getElementById('nav-placeholder');
     if (navEl) navEl.outerHTML = NAV_HTML;
@@ -348,6 +360,7 @@ const EpiWatch = (() => {
     if (footerEl) footerEl.outerHTML = FOOTER_HTML;
     setActiveNav();
 
+    /* Слухач події натискання Enter у пошуковому рядку для редіректу на diseases.html */
     const gs = document.getElementById('globalSearch');
     if (gs) {
       gs.addEventListener('keydown', e => {
@@ -358,6 +371,7 @@ const EpiWatch = (() => {
     }
   }
 
+  /* Публічний API IIFE-модуля EpiWatch */
   return { 
     getDiseases, getDiseaseById, getStatsData, getEducationData,
     getUniqueCountries, getUniqueTypes, getUniquePathogens, getUniqueSymptoms,
@@ -365,4 +379,5 @@ const EpiWatch = (() => {
   };
 })();
 
+/* Старт виконання коду після повного завантаження структури документа */
 document.addEventListener('DOMContentLoaded', () => EpiWatch.injectShell());

@@ -38,7 +38,7 @@
     }
   }
 
-  // Отримання картки хвороби з сервера Андрія (SQLite)
+  // Отримання картки хвороби з сервера (SQLite)
   async function fetchSingleDiseaseFromServer(diseaseId) {
     try {
       const res = await fetch('/api/map-filter', {
@@ -103,10 +103,10 @@
     const fullId = new URLSearchParams(window.location.search).get('id') || 'covid19';
     const content = document.getElementById('detailContent');
 
-    // 1. Запитуємо динамічні дані з сервера Андрія
+    // 1. Запитуємо динамічні дані з сервера
     currentDiseaseData = await fetchSingleDiseaseFromServer(fullId);
     
-    // 2. Визначаємо базовий ключ для пошуку медичних текстів в нашому app.js
+    // 2. Визначаємо базовий ключ для пошуку медичних текстів в app.js
     let baseStaticId = fullId;
     if (fullId.startsWith('covid19_')) {
       baseStaticId = 'covid19';
@@ -122,7 +122,7 @@
       baseStaticId = 'malaria';
     }
 
-    // Отримуємо унікальні деталізовані тексти з нашої бази в app.js
+    // Отримуємо унікальні деталізовані тексти з бази в app.js
     const localStaticData = EpiWatch.getDiseaseById(baseStaticId);
 
     if (!localStaticData) {
@@ -131,8 +131,8 @@
       return;
     }
 
-    // 3. БЕЗДОГАННЕ ЗЛИТТЯ: медичні описи та тексти беремо константно з app.js, 
-    // а статистику (кейси, смерті, країну, рівень) — динамічно з бази Андрія!
+    // медичні описи та тексти беремо константно з app.js, 
+    // а статистику (кейси, смерті, країну, рівень) — динамічно з бази
     const d = {
       ...localStaticData,
       cases: currentDiseaseData ? currentDiseaseData.cases : localStaticData.cases,

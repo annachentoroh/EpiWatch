@@ -1,13 +1,18 @@
+/* ==========================================================================
+   ГЛОБАЛЬНІ ЗМІННІ ТА КОНСТАНТИ МОДУЛЯ АНАЛІТИКИ
+   ========================================================================== */
+
+/* Екземпляри графіків Chart.js для можливості їхнього руйнування (.destroy()) при оновленні */
 let mainChart = null;
 let barChartInstance = null;
 let pieChartInstance = null;
 let compareRegionsChartInstance = null;
 
-// Черга для зберігання останніх пошуків (для кругового та стовпчастого графіків)
+//Черга для зберігання останніх пошуків(для кругового та стовпчастого графіків)
 let searchHistory = [];
-let currentDiseaseGlobal = 'covid19_ua'; // Дефолтний стартовий запит (буде перезаписано, якщо не знайдено)
+let currentDiseaseGlobal = 'covid19_ua'; //Дефолтний стартовий запит(буде перезаписано, якщо не знайдено)
 let currentPeriodGlobal = 'all';
-let cachedServerDiseases = []; // Кеш живих даних з сервера
+let cachedServerDiseases = []; //Кеш живих даних з сервера
 
 const CHART_COLORS = {
   teal:   '#00c9a7',
@@ -18,14 +23,16 @@ const CHART_COLORS = {
   orange: '#fb923c',
 };
 
-// Безпечне форматування чисел
+//Безпечне форматування чисел
 const formatNum = (n) => typeof EpiWatch !== 'undefined' ? EpiWatch.formatNumber(n) : n.toLocaleString('uk-UA');
 
+/* Динамічне визначення кольору графіка на основі ID хвороби або рівня її небезпеки */
 function getDiseaseColor(diseaseId, level) {
   if (diseaseId && diseaseId.startsWith('covid19_')) return CHART_COLORS.teal;
   return { normal: '#00c9a7', medium: '#ffd166', danger: '#ff4d6d' }[level] || CHART_COLORS.blue;
 }
 
+/* Налаштування глобальних стилів за замовчуванням для Chart.js */
 function chartDefaults() {
   Chart.defaults.color = '#9aa0b4';
   Chart.defaults.font.family = "'DM Sans', sans-serif";
@@ -34,6 +41,9 @@ function chartDefaults() {
   Chart.defaults.plugins.legend.labels.padding = 16;
 }
 
+/* ==========================================================================
+   МЕТОДИ ВЗАЄМОДІЇ З СЕРВЕРНИМ API (FETCH)
+   ========================================================================== */
 // Запит історичних трендів до бекенду
 async function fetchStatsDataFromServer(diseaseId, period) {
   try {
@@ -45,8 +55,11 @@ async function fetchStatsDataFromServer(diseaseId, period) {
     return { labels: [], values: [] };
   }
 }
+/* ==========================================================================
+   ПОБУДОВА ГРАФІКІВ (LINE, BAR, DOUGHNUT)
+   ========================================================================== */
 
-// Запит повної бази хвороб з бекенду (для наповнення фільтрів)
+/* Головний лінійний графік тренду захворюваності з градієнтною підсвіткою */
 async function fetchAllDiseasesFromServer() {
   try {
     const res = await fetch('/api/map-filter', {
@@ -71,7 +84,7 @@ async function buildMainChart(diseaseId, period) {
 
   if (mainChart) mainChart.destroy();
 
-  // Градієнтна заливка під лінією
+  //Градієнтна заливка під лінією
   const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 300);
   gradient.addColorStop(0, color + '55'); // 33% opacity
   gradient.addColorStop(1, color + '00'); // 0% opacity
@@ -119,6 +132,7 @@ async function buildMainChart(diseaseId, period) {
   });
 }
 
+/* Стовпчастий графік порівняння кількості випадків для збереженої історії пошуку */
 function buildBarChart() {
   const ctx = document.getElementById('ageChart');
   if (!ctx) return;
@@ -152,6 +166,7 @@ function buildBarChart() {
   });
 }
 
+/* Круговий графік (Doughnut) розподілу випадків за хворобами з історії пошуку */
 function buildPieChart() {
   const ctx = document.getElementById('typeChart');
   if (!ctx) return;
@@ -178,7 +193,11 @@ function buildPieChart() {
     }
   });
 }
+/* ==========================================================================
+   СИНХРОНІЗАЦІЯ ІНТЕРФЕЙСУ ТА УПРАВЛІННЯ СТАНОМ
+   ========================================================================== */
 
+/* Оновлення текстових блоків віджетів верхньої панелі (випадки, смертність, одужання) */
 function updateStatCards(target) {
   if (!target) return;
   
@@ -191,6 +210,7 @@ function updateStatCards(target) {
   document.getElementById('totalRecoveredCard').textContent = formatNum(target.recovered);
 }
 
+/* Логіка обробки вибору користувачем нової хвороби з перемальовуванням усіх компонентів */
 function handleDiseaseSearch(id) {
   currentDiseaseGlobal = id;
   if (!searchHistory.includes(id)) {
@@ -206,6 +226,7 @@ function handleDiseaseSearch(id) {
   buildPieChart();
 }
 
+/* Розрахунок транскордонних ризиків між двома країнами через API та генерація прогрес-бару */
 async function triggerRegionComparisonAPI(c1, c2) {
   const statusBox = document.getElementById('regionComparisonStatus');
   const chartWrap = document.getElementById('compareChartWrap');
@@ -278,13 +299,14 @@ async function triggerRegionComparisonAPI(c1, c2) {
   }
 }
 
+/* ==========================================================================
+   ІНІЦІАЛІЗАЦІЯ СТОРІНКИ ТА СЛУХАЧІВ ПОДІЙ (DOM CONTENT LOADED)
+   ========================================================================== */
 document.addEventListener('DOMContentLoaded', async () => {
   chartDefaults();
   
-  // КРИТИЧНО: Викачуємо живі дані з сервера
   cachedServerDiseases = await fetchAllDiseasesFromServer();
 
-  // Встановлюємо перший існуючий елемент як стартовий, якщо дефолтного немає
   if (cachedServerDiseases.length > 0) {
     const defaultMatch = cachedServerDiseases.find(d => d.id === 'covid19_us' || d.id === 'covid19_ua');
     currentDiseaseGlobal = defaultMatch ? defaultMatch.id : cachedServerDiseases[0].id;

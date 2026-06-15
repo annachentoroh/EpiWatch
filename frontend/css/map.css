@@ -1,113 +1,244 @@
+/* ==========================================================================
+   Глобальні налаштування контейнера карти Leaflet
+   ========================================================================== */
+
 .leaflet-container {
+  /* Темний фон для запобігання білим спалахам під час завантаження тайлів */
   background: #1a1e2a !important;
+  /* Головний шрифт для всієї карти та її елементів (попапи, контролери) */
   font-family: 'DM Sans', sans-serif !important;
 }
 
-.leaflet-tile-pane { filter: brightness(0.75) saturate(0.6) hue-rotate(180deg); }
+/* Стилізація шару тайлів (карт-основи).
+   За допомогою CSS-фільтрів стандартна світла карта перетворюється на кастомну темну:
+   - brightness(0.75): приглушує яскравість
+   - saturate(0.6): зменшує насиченість кольорів
+   - hue-rotate(180deg): інвертує спектр кольорів (наприклад, робить синій помаранчевим або навпаки)
+*/
+.leaflet-tile-pane { 
+  filter: brightness(0.75) saturate(0.6) hue-rotate(180deg); 
+}
 
+
+/* ==========================================================================
+   Стандартні компоненти Leaflet (Попапи та Кнопки)
+   ========================================================================== */
+
+/* Контейнер контенту спливаючого вікна (Popup) */
 .leaflet-popup-content-wrapper {
-  background: #1e2330 !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
-  color: #e8eaf0 !important;
+  background: #1e2330 !important; /* Темний бекграунд картки */
+  border: 1px solid rgba(255,255,255,0.1) !important; /* Ледве помітна тонка світла рамка */
+  border-radius: 12px !important; /* Скруглені кути сучасної картки */
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important; /* Глибока тінь для ефекту підняття (elevation) */
+  color: #e8eaf0 !important; /* Світлий колір тексту */
   min-width: 220px;
 }
-.leaflet-popup-tip { background: #1e2330 !important; }
-.leaflet-popup-close-button {
-  color: #9aa0b4 !important;
-  font-size: 18px !important;
-  top: 10px !important; right: 12px !important;
-}
-.leaflet-popup-close-button:hover { color: #e8eaf0 !important; }
 
-.epi-popup h3 {
-  font-family: 'Syne', sans-serif;
-  font-size: 15px; font-weight: 700;
-  color: #e8eaf0; margin-bottom: 2px;
+/* Стрілочка (куточок) знизу попапа, яка вказує на маркер */
+.leaflet-popup-tip { 
+  background: #1e2330 !important; /* Має збігатися з фоном картки попапа */
 }
+
+/* Кнопка закриття попапа (хрестик) */
+.leaflet-popup-close-button {
+  color: #9aa0b4 !important; /* Приглушений колір хрестика за замовчуванням */
+  font-size: 18px !important;
+  top: 10px !important; 
+  right: 12px !important; /* Акуратне позиціонування у верхньому правому кутку */
+}
+
+/* Ефект наведення на хрестик закриття */
+.leaflet-popup-close-button:hover { 
+  color: #e8eaf0 !important; /* Хрестик стає яскравішим при наведенні */
+}
+
+
+/* ==========================================================================
+   Кастомний контент всередині попапа (.epi-popup)
+   ========================================================================== */
+
+/* Головний заголовок (наприклад, назва локації чи події) */
+.epi-popup h3 {
+  font-family: 'Syne', sans-serif; /* Акцентний шрифт для заголовків */
+  font-size: 15px; 
+  font-weight: 700;
+  color: #e8eaf0; 
+  margin-bottom: 2px;
+}
+
+/* Мета-дані або підзаголовок (наприклад, дата, категорія) */
 .epi-popup .meta {
-  font-size: 11px; color: #5c6378;
+  font-size: 11px; 
+  color: #5c6378; /* Текст значно приглушений */
   margin-bottom: 12px;
 }
+
+/* Рядок даних у форматі "Ключ: Значення" (Key-Value) */
 .epi-popup .row {
-  display: flex; justify-content: space-between;
-  font-size: 13px; margin-bottom: 6px;
+  display: flex; 
+  justify-content: space-between; /* Розносить назву та значення по краях */
+  font-size: 13px; 
+  margin-bottom: 6px;
 }
-.epi-popup .row label { color: #9aa0b4; }
-.epi-popup .row span  { color: #e8eaf0; font-weight: 500; }
+
+/* Ліва частина рядка (назва поля / лейбл) */
+.epi-popup .row label { 
+  color: #9aa0b4; /* Світло-сірий колір */
+}
+
+/* Права частина рядка (саме значення) */
+.epi-popup .row span { 
+  color: #e8eaf0; 
+  font-weight: 500; /* Трохи жирніший текст для акценту на даних */
+}
+
+/* Блок з рекомендаціями чи порадами всередині попапа */
 .epi-popup .advice {
-  background: rgba(0,201,167,.1);
-  border-left: 2px solid #00c9a7;
+  background: rgba(0,201,167,.1); /* Напівпрозорий зеленкуватий фон */
+  border-left: 2px solid #00c9a7; /* Яскрава зелена вертикальна лінія зліва */
   padding: 8px 10px;
-  font-size: 12px; color: #9aa0b4;
-  border-radius: 0 6px 6px 0;
+  font-size: 12px; 
+  color: #9aa0b4;
+  border-radius: 0 6px 6px 0; /* Скруглення тільки з правого боку */
   margin: 10px 0;
 }
+
+/* Кнопка "Детальніше" (або будь-яка закликова кнопка внизу попапа) */
 .epi-popup .detail-btn {
-  display: block; width: 100%;
-  background: #00c9a7; color: #000;
-  border: none; border-radius: 99px;
-  padding: 8px 0; font-size: 13px; font-weight: 600;
-  text-align: center; cursor: pointer;
-  transition: background .2s;
+  display: block; 
+  width: 100%;
+  background: #00c9a7; /* Контрастний бірюзовий/зелений колір */
+  color: #000; /* Чорний текст для хорошої читабельності на світлому фоні */
+  border: none; 
+  border-radius: 99px; /* Повністю овальна кнопка (Pill-shaped) */
+  padding: 8px 0; 
+  font-size: 13px; 
+  font-weight: 600;
+  text-align: center; 
+  cursor: pointer;
+  transition: background .2s; /* Плавна зміна кольору при наведенні */
   font-family: 'DM Sans', sans-serif;
   margin-top: 10px;
 }
-.epi-popup .detail-btn:hover { background: #00a88c; }
 
+/* Ефект наведення на кнопку детальної інформації */
+.epi-popup .detail-btn:hover { 
+  background: #00a88c; /* Стає трохи темнішою */
+}
+
+
+/* ==========================================================================
+   Кастомні гео-маркери (.epi-marker)
+   ========================================================================== */
+
+/* Створення форми "краплі" (класичного маркера карти) суто через CSS:
+   - border-radius: 50% 50% 50% 4px робить три кути круглими, а один гострим.
+   - transform: rotate(-45deg) повертає гострий кут донизу, створюючи форму піктограми карти.
+*/
 .epi-marker {
-  width: 28px; height: 28px;
+  width: 28px; 
+  height: 28px;
   border-radius: 50% 50% 50% 4px;
   transform: rotate(-45deg);
   border: 2px solid;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  display: flex; 
+  align-items: center; 
+  justify-content: center; /* Центрує внутрішню крапку */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4); /* Тінь під маркером */
 }
-.epi-marker.normal   { background: rgba(0,201,167,.2);   border-color: #00c9a7; }
-.epi-marker.medium   { background: rgba(255,209,102,.2); border-color: #ffd166; }
-.epi-marker.danger   { background: rgba(255,77,109,.2);  border-color: #ff4d6d; }
 
+/* Рівні загрози/стану для маркерів (Колірні схеми) */
+.epi-marker.normal { 
+  background: rgba(0,201,167,.2); 
+  border-color: #00c9a7; /* Зелений / Безпечно */
+}
+.epi-marker.medium { 
+  background: rgba(255,209,102,.2); 
+  border-color: #ffd166; /* Жовтий / Увага */
+}
+.epi-marker.danger { 
+  background: rgba(255,77,109,.2); 
+  border-color: #ff4d6d; /* Червоний / Небезпека */
+}
+
+/* Внутрішнє маленьке коло по центру маркера.
+   Потребує зворотного повороту rotate(45deg), якщо всередині буде іконка/текст, 
+   щоб вони не були повернутими разом із батьківським контейнером.
+*/
 .epi-marker-inner {
-  width: 8px; height: 8px; border-radius: 50%;
+  width: 8px; 
+  height: 8px; 
+  border-radius: 50%;
   transform: rotate(45deg);
 }
-.epi-marker.normal .epi-marker-inner   { background: #00c9a7; }
-.epi-marker.medium .epi-marker-inner   { background: #ffd166; }
-.epi-marker.danger .epi-marker-inner   { background: #ff4d6d; }
 
+/* Колір центральної крапки відповідно до статусу маркера */
+.epi-marker.normal .epi-marker-inner { background: #00c9a7; }
+.epi-marker.medium .epi-marker-inner { background: #ffd166; }
+.epi-marker.danger .epi-marker-inner { background: #ff4d6d; }
+
+
+/* ==========================================================================
+   Елементи керування (Zoom) та Копірайт (Attribution)
+   ========================================================================== */
+
+/* Кнопки масштабування карти (+ та -) */
 .leaflet-control-zoom a {
-  background: #1e2330 !important;
+  background: #1e2330 !important; /* Темний фон під стиль теми */
   border-color: rgba(255,255,255,0.08) !important;
   color: #9aa0b4 !important;
 }
+
+/* Наведення на кнопки зуму */
 .leaflet-control-zoom a:hover {
   background: #252b3b !important;
   color: #e8eaf0 !important;
 }
 
-/* Attribution */
+/* Блок копірайту та ліцензії карти (зазвичай у правому нижньому кутку) */
 .leaflet-control-attribution {
-  background: rgba(13,15,20,0.7) !important;
+  background: rgba(13,15,20,0.7) !important; /* Напівпрозорий темний фон */
   color: #5c6378 !important;
   font-size: 10px !important;
 }
-.leaflet-control-attribution a { color: #9aa0b4 !important; }
 
-/* Loading overlay */
+/* Посилання всередині копірайту */
+.leaflet-control-attribution a { 
+  color: #9aa0b4 !important; 
+}
+
+
+/* ==========================================================================
+   Екран завантаження карти (Loading Overlay)
+   ========================================================================== */
+
+/* Повноекранна плашка завантаження поверх карти */
 .map-loading {
-  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute; 
+  top: 0; left: 0; right: 0; bottom: 0;
   background: #1e2330;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 500; border-radius: 14px;
-  flex-direction: column; gap: 14px;
-  color: #9aa0b4; font-size: 14px;
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  z-index: 500; /* Перекриває саму карту та інші елементи інтерфейсу */
+  border-radius: 14px;
+  flex-direction: column; 
+  gap: 14px; /* Відступ між спінером і текстом */
+  color: #9aa0b4; 
+  font-size: 14px;
 }
+
+/* Анімоване кільце завантаження (Spinner) */
 .map-loading__spinner {
-  width: 36px; height: 36px;
-  border: 3px solid rgba(0,201,167,.2);
-  border-top-color: #00c9a7;
+  width: 36px; 
+  height: 36px;
+  border: 3px solid rgba(0,201,167,.2); /* Тонке напівпрозоре кільце основи */
+  border-top-color: #00c9a7; /* Яскрава верхня дуга, яка буде обертатися */
   border-radius: 50%;
-  animation: spin .8s linear infinite;
+  animation: spin .8s linear infinite; /* Нескінченне рівномірне обертання */
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Ключові кадри для анімації обертання на 360 градусів */
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
