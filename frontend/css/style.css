@@ -748,48 +748,65 @@ ul { list-style: none; }
   
   .page { padding-top: calc(var(--nav-h) + 16px); padding-bottom: 40px; }
 
-  /* НАВІГАЦІЯ (Перетворення меню на горизонтальну карусель) */
   .nav { 
-    padding: 0 12px; 
-    justify-content: flex-start; /* Вирівнюємо від лівого краю */
-    gap: 8px;
-    overflow-x: auto; /* Дозволяємо шапці скролитися, якщо логотип теж заважає */
+    padding: 0 12px !important; 
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important; /* Рівняємо все від лівого краю */
+    gap: 12px !important;
+    overflow: hidden !important; /* Сам блок шапки не повинен ламати екран */
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 
   .nav__logo { 
-    font-size: 16px; 
-    margin-right: 8px;
-    flex-shrink: 0; /* Щоб логотип не стискався в кашу */
+    font-size: 15px !important; /* Трохи компактніший шрифт логотипу для мобілок */
+    margin-right: 0 !important; /* Повністю прибираємо авто-відступ розтягування */
+    flex-shrink: 0 !important;  /* Забороняємо логотипу стискатися чи зникати */
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
   }
-  .nav__logo svg { width: 18px; height: 18px; }
-  .nav__search { display: none !important; } 
+  .nav__logo svg { width: 16px !important; height: 16px !important; }
+  .nav__search { display: none !important; } /* Заховали старий пошук */
   
-  /* Перетворюємо блок посилань на горизонтальну стрічку, яку можна гортати пальцем */
+  /* фікс каруселі посилань: */
   .nav__links { 
     display: flex !important;
-    flex-direction: row !important; /* Тільки в один рядок */
-    gap: 6px; 
-    overflow-x: auto !important; /* УВАГА: вмикаємо горизонтальний скрол для кнопок */
-    scroll-behavior: smooth;
-    white-space: nowrap; /* Забороняємо кнопкам переноситися на новий рядок */
-    flex-grow: 1;
+    flex-direction: row !important; /* Суворо в один рядок */
+    align-items: center !important;
+    gap: 4px !important; 
     
-    /* Приховуємо стандартний потворний scrollbar на мобільних, щоб меню виглядало нативно */
-    -webkit-overflow-scrolling: touch; /* Плавний скрол на iOS */
-    scrollbar-width: none; /* Для Firefox */
+    /* Дозволяємо кнопкам виходити за екран і вмикаємо горизонтальне прокручування */
+    overflow-x: scroll !important; 
+    overflow-y: hidden !important;
+    white-space: nowrap !important; /* ЗАБОРОНА переносу на новий рядок */
+    
+    flex-grow: 1 !important;
+    flex-shrink: 1 !important;
+    
+    /* Увімкнення супер-плавного тач-скролу пальцем на iPhone (iOS) */
+    -webkit-overflow-scrolling: touch !important; 
+    
+    /* Повністю ховаємо потворний системний скролбар, щоб панель виглядала як нативний додаток */
+    scrollbar-width: none !important; /* Для Firefox */
   }
 
-  /* Приховуємо scrollbar для Chrome/Safari */
+  /* Ховаємо скролбар для Safari та Chrome */
   .nav__links::-webkit-scrollbar {
-    display: none;
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 
-  /* Самі кнопочки меню */
+  /* Самі кнопочки-посилання */
   .nav__links a {
-    font-size: 13px;
-    padding: 6px 12px;
-    flex-shrink: 0; /* КРИТИЧНО: забороняємо кнопкам звужуватися, тримаємо їхній текст! */
-    display: inline-block;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
+    display: inline-block !important;
+    white-space: nowrap !important; /* Щоб назва кнопки не рвалася навпіл */
+    flex-shrink: 0 !important;      /* забороняється кнопкам звужуватися! */
   }
 
   /*  СТАТИСТИЧНІ КАРТКИ */
