@@ -718,17 +718,28 @@ ul { list-style: none; }
   .edu-grid { grid-template-columns: 1fr; gap: 16px; }
 }
 
+@media (max-width: 768px) {
+  /* breakpoint — двоколонні гриди → одноколонні */
+  .detail-grid { grid-template-columns: 1fr !important; gap: 20px; }
+  .filters-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px; }
+  
+  /* Вторинні графіки на charts.html */
+  .charts-secondary-grid { grid-template-columns: 1fr !important; }
+}
+
 @media (max-width: 600px) {
   :root {
     --radius: 12px;
+    --nav-h: 56px;
   }
-  
+ 
+  /* ===== БАЗОВІ ===== */
   html, body {
     overflow-y: auto !important;
     overflow-x: hidden !important;
     height: auto !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: 100vw !important;
   }
   
   .page {
@@ -736,210 +747,313 @@ ul { list-style: none; }
     overflow-x: hidden !important;
     display: block !important;
     height: auto !important;
-    clear: both;
+    padding-top: calc(var(--nav-h) + 16px) !important;
+    padding-bottom: 40px;
   }
-
+ 
   .container { 
-    padding: 0 16px; 
+    padding: 0 14px !important; 
     max-width: 100% !important;
     overflow-x: hidden !important;
     box-sizing: border-box !important;
   }
-  
-  .page { padding-top: calc(var(--nav-h) + 16px); padding-bottom: 40px; }
-
+ 
+  /* НАВІГАЦІЯ */
+  /* Навбар: логотип зліва, посилання займають решту і скролляться */
   .nav { 
-    padding: 0 12px !important; 
+    padding: 0 !important;
     display: flex !important;
     flex-direction: row !important;
-    align-items: center !important;
-    justify-content: flex-start !important; /* Рівняємо все від лівого краю */
-    gap: 12px !important;
-    overflow: hidden !important; /* Сам блок шапки не повинен ламати екран */
+    align-items: stretch !important;
+    overflow: hidden !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    gap: 0 !important;
   }
-
+ 
+  /* Логотип — фіксована ширина, не стискається */
   .nav__logo { 
-    font-size: 15px !important; /* Трохи компактніший шрифт логотипу для мобілок */
-    margin-right: 0 !important; /* Повністю прибираємо авто-відступ розтягування */
-    flex-shrink: 0 !important;  /* Забороняємо логотипу стискатися чи зникати */
+    font-size: 15px !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 12px !important;
+    border-right: 1px solid var(--border) !important;
     display: flex !important;
     align-items: center !important;
     gap: 4px !important;
+    white-space: nowrap !important;
   }
   .nav__logo svg { width: 16px !important; height: 16px !important; }
-  .nav__search { display: none !important; } /* Заховали старий пошук */
   
-  /* фікс каруселі посилань: */
+  /* Пошук — приховуємо, бо нема місця */
+  .nav__search { display: none !important; }
+  
+  /* Посилання — займають весь залишковий простір, горизонтальний скрол */
   .nav__links { 
     display: flex !important;
-    flex-direction: row !important; /* Суворо в один рядок */
+    flex-direction: row !important;
     align-items: center !important;
-    gap: 4px !important; 
-    
-    /* Дозволяємо кнопкам виходити за екран і вмикаємо горизонтальне прокручування */
-    overflow-x: scroll !important; 
+    gap: 0 !important;
+    flex: 1 1 0 !important;           /* займає весь простір після логотипу */
+    min-width: 0 !important;          /* дозволяє flex-елементу стискатися */
+    overflow-x: auto !important;      /* горизонтальний скрол */
     overflow-y: hidden !important;
-    white-space: nowrap !important; /* ЗАБОРОНА переносу на новий рядок */
-    
-    flex-grow: 1 !important;
-    flex-shrink: 1 !important;
-    
-    /* Увімкнення супер-плавного тач-скролу пальцем на iPhone (iOS) */
-    -webkit-overflow-scrolling: touch !important; 
-    
-    /* Повністю ховаємо потворний системний скролбар, щоб панель виглядала як нативний додаток */
-    scrollbar-width: none !important; /* Для Firefox */
+    -webkit-overflow-scrolling: touch !important;  /* плавний скрол на iOS */
+    scrollbar-width: none !important;  /* Firefox: без скролбару */
+    padding: 0 8px !important;
   }
-
-  /* Ховаємо скролбар для Safari та Chrome */
-  .nav__links::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-  }
-
-  /* Самі кнопочки-посилання */
+  .nav__links::-webkit-scrollbar { display: none !important; }
+ 
+  /* Кожне посилання — компактне, не переносить текст */
   .nav__links a {
     font-size: 12px !important;
     padding: 6px 10px !important;
-    display: inline-block !important;
-    white-space: nowrap !important; /* Щоб назва кнопки не рвалася навпіл */
-    flex-shrink: 0 !important;      /* забороняється кнопкам звужуватися! */
+    display: inline-flex !important;
+    align-items: center !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    border-radius: 6px !important;
   }
-
-  /*  СТАТИСТИЧНІ КАРТКИ */
+ 
+  /* СТАТИСТИЧНІ КАРТКИ */
   .stat-cards { 
-    grid-template-columns: 1fr; 
-    gap: 10px; 
-    margin-bottom: 16px;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
   }
-  .stat-card { padding: 14px 16px; }
+  .stat-card { padding: 14px 16px !important; }
   .stat-card__label { font-size: 11px; margin-bottom: 4px; }
-  .stat-card__value { font-size: 28px; }
-
-  /*  ФІЛЬТРИ ТА ПОШУК */
-  .filters { flex-direction: column; align-items: stretch; gap: 10px; }
-  .filter-group { width: 100%; }
+  .stat-card__value { font-size: 26px !important; }
+ 
+  /* ФІЛЬТРИ */
+  .filters { flex-direction: column !important; align-items: stretch !important; gap: 10px !important; }
+  .filter-group { width: 100% !important; }
   .filter-select { 
     width: 100% !important; 
-    min-width: 100% !important; 
-    padding: 10px 30px 10px 12px; 
-    font-size: 14px;
+    min-width: unset !important; 
+    padding: 10px 30px 10px 12px !important; 
+    font-size: 14px !important;
     box-sizing: border-box !important;
   }
-  .filters-grid { grid-template-columns: 1fr; gap: 10px; }
+  .filters-grid { 
+    grid-template-columns: 1fr !important; 
+    gap: 10px !important; 
+  }
   
-  .search-bar { padding: 12px 16px; width: 100% !important; box-sizing: border-box !important; }
-  .search-bar input { font-size: 15px; }
-
-  /*  ГЕРОЙ-БЛОК */
-  .hero { padding: 40px 12px 32px; box-sizing: border-box; }
+  /* ПОШУК (diseases.html) */
+  .search-bar { 
+    padding: 10px 14px !important; 
+    width: 100% !important; 
+    max-width: 100% !important;
+    box-sizing: border-box !important; 
+  }
+  .search-bar input { font-size: 15px !important; }
+  .search-hero { padding: 24px 0 12px !important; }
+  .search-hero h1 { font-size: 22px !important; }
+ 
+  /* Hero-БЛОК (index.html) */
+  .hero { padding: 36px 14px 28px !important; box-sizing: border-box !important; }
   .hero::before { width: 100%; height: 200px; }
-  .hero__title { font-size: 28px; line-height: 1.2; margin-bottom: 12px; }
-  .hero__sub { font-size: 14px; line-height: 1.5; }
-  .hero__cta { flex-direction: column; width: 100%; gap: 10px; }
-  .hero__cta .btn { width: 100%; justify-content: center; padding: 12px; }
-
-  /* КАРТКИ ЗАХВОРЮВАНЬ */
-  .disease-card { padding: 16px; box-sizing: border-box !important; }
-  .disease-card__name { font-size: 16px; }
-  .disease-card__stats { gap: 12px; flex-wrap: wrap; }
-  .disease-card__stat span { font-size: 18px; }
-  
-  /* ТАБЛИЦІ ТА СТАТИСТИКА В ДЕТАЛЯХ */
-  .info-row { padding: 10px 12px; }
-  .info-row label, .info-row span { font-size: 12px; }
-  
-  /* ГРАФІКИ ТА ДІАГРАМИ */
+  .hero__title { font-size: 26px !important; line-height: 1.2; margin-bottom: 10px; }
+  .hero__sub { font-size: 14px !important; line-height: 1.5; }
+  .hero__cta { flex-direction: column !important; width: 100% !important; gap: 10px !important; }
+  .hero__cta .btn { width: 100% !important; justify-content: center !important; padding: 13px !important; }
+ 
+  /* КАРТКИ ЗАХВОРЮВАНЬ (diseases.html) */
+  .disease-card { padding: 14px !important; box-sizing: border-box !important; }
+  .disease-card__name { font-size: 15px !important; }
+  .disease-card__stats { gap: 10px !important; flex-wrap: wrap !important; }
+  .disease-card__stat span { font-size: 17px !important; }
+  .disease-card__meta { white-space: normal !important; text-overflow: unset !important; }
+ 
+  /* ДЕТАЛІ ЗАХВОРЮВАННЯ (disease-detail.html) */
+  .detail-grid { 
+    grid-template-columns: 1fr !important; 
+    gap: 16px !important; 
+  }
+  .info-row { padding: 10px 12px !important; flex-wrap: wrap !important; gap: 4px !important; }
+  .info-row label, .info-row span { font-size: 12px !important; }
+  .info-row span { text-align: right !important; }
+ 
+  /* ГРАФІКИ (charts.html + disease-detail.html) */
   .chart-wrap {
     height: auto !important;
     padding: 14px !important;
-    margin-bottom: 16px;
+    margin-bottom: 16px !important;
     box-sizing: border-box !important;
     max-width: 100% !important;
+    overflow: hidden !important;
   }
-  .chart-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .chart-header { 
+    flex-direction: column !important; 
+    align-items: flex-start !important; 
+    gap: 10px !important; 
+    margin-bottom: 14px !important;
+  }
+  .chart-header > div:last-child {
+    /* Блок із фільтрами/tabs у правій частині header-у */
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+  }
   .chart-wrap canvas {
     max-width: 100% !important;
-    height: auto !important;
   }
-  .chart-wrap .legend, 
-  [class*="legend"] {
+ 
+  /* Time tabs — горизонтальний скрол якщо не влазять */
+  .time-tabs {
     display: flex !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-    margin-top: 12px;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
   }
-
-  /* ПОРІВНЯННЯ РЕГІОНІВ (Селектори країн) */
-  [class*="compare"], 
-  .region-box,
-  .detail-grid + .card,
-  div:has(> select + span + select) { 
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    box-sizing: border-box !important;
+  .time-tab {
+    font-size: 12px !important;
+    padding: 5px 10px !important;
   }
-  [class*="compare"] select,
-  .region-box select {
+ 
+  /*  ВТОРИННІ ГРАФІКИ (charts.html — блок з двома chart поруч) ===== */
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+ 
+  /* ПОРІВНЯННЯ РЕГІОНІВ (charts.html) */
+  /* Блок з двома інпутами країн — у колонку на мобілці */
+  .chart-wrap .chart-header > div[style*="display:flex"],
+  .chart-wrap .chart-header > div[style*="display: flex"] {
+    flex-direction: column !important;
     width: 100% !important;
-    min-width: 100% !important;
-    box-sizing: border-box !important;
+    gap: 8px !important;
   }
-  [class*="compare"] span, 
-  .region-box span {
-    text-align: center;
-    margin: 2px 0;
-    color: var(--text3);
-    font-size: 12px;
+  .search-suggest-wrap {
+    width: 100% !important;
+    min-width: unset !important;
   }
+  .search-suggest-wrap input.filter-select {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+ 
+  /* ОСВІТНІЙ БЛОК (education.html) */
+  /* Таби — горизонтальний скрол */
+  #tabsNavigation {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    flex-wrap: nowrap !important;
+    padding-bottom: 0 !important;
+    gap: 0 !important;
+  }
+  #tabsNavigation::-webkit-scrollbar { display: none !important; }
   
-  /* ТЕСТ-ВІРУС (КВІЗ) */
-  .quiz-hero { padding: 30px 12px 20px; }
-  .quiz-hero h1 { font-size: 26px; }
-  .quiz-card, .result-card { padding: 20px 16px; border-radius: var(--radius); box-sizing: border-box; }
-  .quiz-question { font-size: 18px; }
-  .quiz-option { padding: 12px; font-size: 13px; width: 100%; box-sizing: border-box; }
-
-  /* ОСВІТНІЙ БЛОК ТА МІФИ (Лікування горизонтального скролу тут) */
+  .edu-tab-btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    font-size: 13px !important;
+    padding: 8px 14px !important;
+  }
+ 
+  /* Гриди освіти — одна колонка */
   .edu-grid { 
     grid-template-columns: 1fr !important; 
     width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
+    gap: 12px !important;
   }
   .edu-card { 
     width: 100% !important; 
     box-sizing: border-box !important; 
     padding: 16px !important;
   }
+ 
+  /* Двоколонний grid в профілактиці (education.html) */
+  div[style*="grid-template-columns:1fr 1fr"],
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
   
+  /* МІФИ (education.html) */
   .myth-card { 
-    padding: 16px; 
+    padding: 14px !important; 
     width: 100% !important;
     box-sizing: border-box !important;
+    margin-bottom: 10px !important;
   }
-  .myth-card__claim { flex-direction: column; gap: 6px; }
-  .myth-card__claim-badge { margin-top: 0; }
+  .myth-card__claim { flex-direction: column !important; gap: 8px !important; }
   .myth-card__truth { 
-    padding: 10px 12px; 
-    font-size: 12px; 
+    padding: 10px 12px !important; 
+    font-size: 12px !important; 
+  }
+ 
+  /* ТЕСТ (test.html) */
+  .quiz-hero { padding: 28px 14px 16px !important; }
+  .quiz-hero h1 { font-size: 24px !important; }
+  .quiz-card, .result-card { 
+    padding: 20px 14px !important; 
+    border-radius: var(--radius) !important; 
+    box-sizing: border-box !important; 
+    margin: 0 !important;
+  }
+  .quiz-question { font-size: 17px !important; }
+  .quiz-option { 
+    padding: 12px !important; 
+    font-size: 13px !important; 
+    width: 100% !important; 
+    box-sizing: border-box !important; 
+  }
+ 
+  /* КАРТА (index.html) */
+  #map { 
+    height: 320px !important; 
+    width: 100% !important; 
+  }
+ 
+  /* Legend + toggle на карті — у колонку */
+  div[style*="display:flex"][style*="justify-content:space-between"][style*="flex-wrap:wrap"],
+  div[style*="display: flex"][style*="justify-content: space-between"][style*="flex-wrap: wrap"] {
+    flex-direction: column !important;
+    gap: 10px !important;
+    align-items: flex-start !important;
+  }
+ 
+  /* Region box */
+  .region-box { padding: 14px !important; }
+  .region-box__label {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .region-input-inline {
     width: 100% !important;
+    margin-left: 0 !important;
     box-sizing: border-box !important;
   }
-
-  /* КАРТА */
-  #map { height: 350px; width: 100% !important; } 
-
-  /* ФУТЕР */
+ 
+  /* ===== PAGE HEADER ===== */
+  .page-header { margin-bottom: 20px !important; }
+  .page-header h1 { font-size: 22px !important; }
+ 
+  /* ===== ЛЕГЕНДА (карта) ===== */
+  .legend {
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+  }
+ 
+  /* ===== TOGGLE TABS (Весь світ / Україна) ===== */
+  .toggle-tabs { flex-shrink: 0 !important; }
+  .toggle-tab { 
+    padding: 6px 14px !important; 
+    font-size: 12px !important; 
+  }
+ 
+  /* ===== ФУТЕР ===== */
   .footer { 
-    padding: 20px 16px 32px 16px; 
-    font-size: 11px; 
-    line-height: 1.5;
-    box-sizing: border-box !important;
+    padding: 20px 14px 32px !important; 
+    font-size: 11px !important; 
+    line-height: 1.5 !important;
+    margin-top: 40px !important;
   }
 }
